@@ -367,7 +367,8 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align)
 	unsigned long bitmap_maxno, bitmap_no, bitmap_count;
 	struct page *page = NULL;
 	int ret;
-
+	
+	printk("Saeed18: %s\n", __FUNCTION__);
 	if (!cma || !cma->count)
 		return NULL;
 

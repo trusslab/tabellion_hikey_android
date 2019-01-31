@@ -67,6 +67,8 @@ struct drm_framebuffer *kirin_framebuffer_init(struct drm_device *dev,
 	struct drm_framebuffer *fb;
 	int ret;
 
+	printk("Saeed: %s\n", __FUNCTION__);
+
 	kirin_fb = kzalloc(sizeof(*kirin_fb), GFP_KERNEL);
 	if (!kirin_fb) {
 		ret = -ENOMEM;

@@ -148,14 +148,22 @@ static struct drm_fb_cma *drm_fb_cma_alloc(struct drm_device *dev,
 	int ret;
 	int i;
 
+	printk("Saeed13: %s\n", __FUNCTION__);
+
 	fb_cma = kzalloc(sizeof(*fb_cma), GFP_KERNEL);
+	
+	printk("Saeed13: %s, addr=%lx\n", __FUNCTION__, (unsigned long)fb_cma);
+
 	if (!fb_cma)
 		return ERR_PTR(-ENOMEM);
 
 	drm_helper_mode_fill_fb_struct(&fb_cma->fb, mode_cmd);
 
-	for (i = 0; i < num_planes; i++)
+	for (i = 0; i < num_planes; i++) {
 		fb_cma->obj[i] = obj[i];
+		printk("Saeed13: %s, addr=%lx\n", __FUNCTION__, (unsigned long)fb_cma->obj[i]);
+		printk("Saeed13: %s, addr=%lx\n", __FUNCTION__, (unsigned long)fb_cma->obj[i]->paddr);
+	}
 
 	ret = drm_framebuffer_init(dev, &fb_cma->fb, funcs);
 	if (ret) {
@@ -192,6 +200,7 @@ struct drm_framebuffer *drm_fb_cma_create_with_funcs(struct drm_device *dev,
 	int ret;
 	int i;
 
+	printk("Saeed15: %s\n", __FUNCTION__);
 	hsub = drm_format_horz_chroma_subsampling(mode_cmd->pixel_format);
 	vsub = drm_format_vert_chroma_subsampling(mode_cmd->pixel_format);
 
@@ -382,6 +391,7 @@ static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
 	 * fbops: fb_deferred_io_cleanup() clears fbops.fb_mmap
 	 * fbdefio: individual delays
 	 */
+	printk("Saeed13: %s\n", __FUNCTION__);
 	fbdefio = kzalloc(sizeof(*fbdefio), GFP_KERNEL);
 	fbops = kzalloc(sizeof(*fbops), GFP_KERNEL);
 	if (!fbdefio || !fbops) {
@@ -435,6 +445,8 @@ int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
 	struct fb_info *fbi;
 	size_t size;
 	int ret;
+
+	printk("Saeed15: %s\n", __FUNCTION__);
 
 	DRM_DEBUG_KMS("surface width(%d), height(%d) and bpp(%d)\n",
 			sizes->surface_width, sizes->surface_height,
@@ -533,6 +545,7 @@ struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
 	int ret;
 
 	fbdev_cma = kzalloc(sizeof(*fbdev_cma), GFP_KERNEL);
+	printk("Saeed13: %s\n", __FUNCTION__);
 	if (!fbdev_cma) {
 		dev_err(dev->dev, "Failed to allocate drm fbdev.\n");
 		return ERR_PTR(-ENOMEM);

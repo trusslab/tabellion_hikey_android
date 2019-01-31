@@ -55,6 +55,8 @@ unsigned long kirin_alloc_fb_buffer(struct kirin_fbdev *fbdev, int size)
 	unsigned long buf_addr = 0;
 	int shared_fd = -1;
 
+	printk("Saeed: %s\n", __FUNCTION__);
+
 	if (NULL == fbdev) {
 		DRM_ERROR("fbdev is NULL!\n");
 		return -EINVAL;
@@ -135,6 +137,8 @@ static int kirin_fbdev_mmap(struct fb_info *info, struct vm_area_struct * vma)
 
 	struct drm_fb_helper *helper = (struct drm_fb_helper *)info->par;
 	struct kirin_fbdev *fbdev = to_kirin_fbdev(helper);
+
+	printk("Saeed: %s\n", __FUNCTION__);
 
 	if (NULL == info) {
 		DRM_ERROR("info is NULL!\n");
@@ -314,6 +318,8 @@ static int kirin_fbdev_create(struct drm_fb_helper *helper,
 			sizes->surface_height, sizes->surface_bpp,
 			sizes->fb_width, sizes->fb_height);
 
+	printk("Saeed: %s\n", __FUNCTION__);
+
 	mode_cmd.pixel_format = drm_mode_legacy_fb_format(sizes->surface_bpp,
 			sizes->surface_depth);
 
@@ -410,6 +416,8 @@ struct drm_fb_helper *kirin_drm_fbdev_init(struct drm_device *dev)
 	fbdev = kzalloc(sizeof(*fbdev), GFP_KERNEL);
 	if (!fbdev)
 		goto fail;
+
+	printk("Saeed: %s\n", __FUNCTION__);
 
 	priv->fb_helper = helper = &fbdev->fb_helper;
 

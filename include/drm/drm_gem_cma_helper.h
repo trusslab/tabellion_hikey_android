@@ -23,6 +23,7 @@ struct drm_gem_cma_object {
 static inline struct drm_gem_cma_object *
 to_drm_gem_cma_obj(struct drm_gem_object *gem_obj)
 {
+	//printk("Saeed13: %s, %lx\n", __FUNCTION__, (unsigned long)base);
 	return container_of(gem_obj, struct drm_gem_cma_object, base);
 }
 

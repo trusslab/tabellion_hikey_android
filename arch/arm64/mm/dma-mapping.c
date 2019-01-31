@@ -58,6 +58,7 @@ static void *__alloc_from_pool(size_t size, struct page **ret_page, gfp_t flags)
 	unsigned long val;
 	void *ptr = NULL;
 
+	printk("Saeed18: %s\n", __FUNCTION__);
 	if (!atomic_pool) {
 		WARN(1, "coherent pool not initialised!\n");
 		return NULL;
@@ -99,6 +100,8 @@ static void *__dma_alloc_coherent(struct device *dev, size_t size,
 		return NULL;
 	}
 
+	printk("Saeed18: %s\n", __FUNCTION__);
+		
 	if (IS_ENABLED(CONFIG_ZONE_DMA) &&
 	    dev->coherent_dma_mask <= DMA_BIT_MASK(32))
 		flags |= GFP_DMA;
@@ -150,6 +153,7 @@ static void *__dma_alloc(struct device *dev, size_t size,
 
 	size = PAGE_ALIGN(size);
 
+	printk("Saeed18: %s\n", __FUNCTION__);
 	if (!coherent && !gfpflags_allow_blocking(flags)) {
 		struct page *page = NULL;
 		void *addr = __alloc_from_pool(size, &page, flags);

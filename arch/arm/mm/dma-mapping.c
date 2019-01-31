@@ -601,6 +601,8 @@ static void *__alloc_from_contiguous(struct device *dev, size_t size,
 	struct page *page;
 	void *ptr = NULL;
 
+	printk("Saeed18: %s\n", __FUNCTION__);
+
 	page = dma_alloc_from_contiguous(dev, count, order);
 	if (!page)
 		return NULL;
@@ -667,6 +669,7 @@ static void *__alloc_simple_buffer(struct device *dev, size_t size, gfp_t gfp,
 {
 	struct page *page;
 	/* __alloc_simple_buffer is only called when the device is coherent */
+	printk("Saeed18: %s\n", __FUNCTION__);
 	page = __dma_alloc_buffer(dev, size, gfp, COHERENT);
 	if (!page)
 		return NULL;
@@ -678,6 +681,7 @@ static void *__alloc_simple_buffer(struct device *dev, size_t size, gfp_t gfp,
 static void *simple_allocator_alloc(struct arm_dma_alloc_args *args,
 				    struct page **ret_page)
 {
+	printk("Saeed18: %s\n", __FUNCTION__);
 	return __alloc_simple_buffer(args->dev, args->size, args->gfp,
 				     ret_page);
 }
@@ -695,6 +699,7 @@ static struct arm_dma_allocator simple_allocator = {
 static void *cma_allocator_alloc(struct arm_dma_alloc_args *args,
 				 struct page **ret_page)
 {
+	printk("Saeed18: %s\n", __FUNCTION__);
 	return __alloc_from_contiguous(args->dev, args->size, args->prot,
 				       ret_page, args->caller,
 				       args->want_vaddr, args->coherent_flag);
@@ -714,6 +719,7 @@ static struct arm_dma_allocator cma_allocator = {
 static void *pool_allocator_alloc(struct arm_dma_alloc_args *args,
 				  struct page **ret_page)
 {
+	printk("Saeed18: %s\n", __FUNCTION__);
 	return __alloc_from_pool(args->size, ret_page);
 }
 
@@ -730,6 +736,7 @@ static struct arm_dma_allocator pool_allocator = {
 static void *remap_allocator_alloc(struct arm_dma_alloc_args *args,
 				   struct page **ret_page)
 {
+	printk("Saeed18: %s\n", __FUNCTION__);
 	return __alloc_remap_buffer(args->dev, args->size, args->gfp,
 				    args->prot, ret_page, args->caller,
 				    args->want_vaddr);
@@ -775,6 +782,8 @@ static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
 		return NULL;
 	}
 #endif
+
+	printk("Saeed: %s\n", ____);
 
 	if (!mask)
 		return NULL;

@@ -2093,6 +2093,8 @@ int drm_atomic_helper_update_plane(struct drm_plane *plane,
 	struct drm_plane_state *plane_state;
 	int ret = 0;
 
+	printk("Saeed9: %s\n", __FUNCTION__);
+
 	state = drm_atomic_state_alloc(plane->dev);
 	if (!state)
 		return -ENOMEM;
@@ -2672,6 +2674,8 @@ drm_atomic_helper_plane_set_property(struct drm_plane *plane,
 	struct drm_atomic_state *state;
 	struct drm_plane_state *plane_state;
 	int ret = 0;
+	
+	printk("Saeed9: %s\n", __FUNCTION__);
 
 	state = drm_atomic_state_alloc(plane->dev);
 	if (!state)
@@ -2798,6 +2802,8 @@ int drm_atomic_helper_page_flip(struct drm_crtc *crtc,
 	struct drm_plane_state *plane_state;
 	struct drm_crtc_state *crtc_state;
 	int ret = 0;
+
+	printk("Saeed9: %s\n", __FUNCTION__);
 
 	if (flags & DRM_MODE_PAGE_FLIP_ASYNC)
 		return -EINVAL;

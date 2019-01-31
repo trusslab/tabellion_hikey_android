@@ -135,6 +135,8 @@ int drm_gem_object_init(struct drm_device *dev,
 {
 	struct file *filp;
 
+	printk("Saeed17: %s, size=%u\n", __FUNCTION__, (unsigned int)size);
+
 	drm_gem_private_object_init(dev, obj, size);
 
 	filp = shmem_file_setup("drm mm object", size, VM_NORESERVE);

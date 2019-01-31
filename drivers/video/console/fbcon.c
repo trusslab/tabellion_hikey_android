@@ -3518,6 +3518,8 @@ static int fbcon_init_device(void)
 
 	fbcon_has_sysfs = 1;
 
+	printk("%s\n", __FUNCTION__);
+
 	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
 		error = device_create_file(fbcon_device, &device_attrs[i]);
 

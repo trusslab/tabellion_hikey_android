@@ -428,7 +428,7 @@ void optee_handle_rpc(struct tee_context *ctx, struct optee_rpc_param *param,
 		break;
 	case OPTEE_SMC_RPC_FUNC_FREE:
 		shm = reg_pair_to_ptr(param->a1, param->a2);
-		tee_shm_free(shm);
+		//tee_shm_free(shm);
 		break;
 	case OPTEE_SMC_RPC_FUNC_FOREIGN_INTR:
 		/*

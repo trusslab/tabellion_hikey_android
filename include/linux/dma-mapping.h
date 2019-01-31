@@ -456,16 +456,22 @@ static inline void *dma_alloc_attrs(struct device *dev, size_t size,
 
 	BUG_ON(!ops);
 
+//	printk("Saeed17 [1]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	if (dma_alloc_from_coherent(dev, size, dma_handle, &cpu_addr))
 		return cpu_addr;
+//	printk("Saeed17 [2]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 
 	if (!arch_dma_alloc_attrs(&dev, &flag))
 		return NULL;
+//	printk("Saeed17 [3]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	if (!ops->alloc)
 		return NULL;
 
+//	printk("Saeed17 [4]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	cpu_addr = ops->alloc(dev, size, dma_handle, flag, attrs);
+	printk("Saeed17 [5]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	debug_dma_alloc_coherent(dev, size, *dma_handle, cpu_addr);
+	printk("Saeed17 [6]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	return cpu_addr;
 }
 

@@ -237,6 +237,8 @@ static int virtio_gpufb_create(struct drm_fb_helper *helper,
 	mode_cmd.pitches[0] = mode_cmd.width * 4;
 	mode_cmd.pixel_format = drm_mode_legacy_fb_format(32, 24);
 
+	printk("Saeed13: %s\n", __FUNCTION__);
+
 	switch (mode_cmd.pixel_format) {
 #ifdef __BIG_ENDIAN
 	case DRM_FORMAT_XRGB8888:

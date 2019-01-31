@@ -743,6 +743,7 @@ static struct fb_info *file_fb_info(struct file *file)
 	return info;
 }
 
+bool check = 0;
 static ssize_t
 fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
@@ -752,6 +753,11 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 	u8 __iomem *src;
 	int c, cnt = 0, err = 0;
 	unsigned long total_size;
+	
+	if(!check) {
+		check = 1;
+		printk("Saeed: %s\n", __FUNCTION__);
+	}
 
 	if (!info || ! info->screen_base)
 		return -ENODEV;
@@ -817,6 +823,8 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
 	u8 __iomem *dst;
 	int c, cnt = 0, err = 0;
 	unsigned long total_size;
+		
+	printk("Saeed: %s\n", __FUNCTION__);
 
 	if (!info || !info->screen_base)
 		return -ENODEV;
@@ -1414,9 +1422,14 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
 	 * Ugh. This can be either the frame buffer mapping, or
 	 * if pgoff points past it, the mmio mapping.
 	 */
+	
+	printk("Saeed: %s\n", __FUNCTION__);
 	start = info->fix.smem_start;
 	len = info->fix.smem_len;
+	
+	printk("Saeed: start=%lu, len=%u\n", start, len);
 	mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
+	printk("Saeed: mmio_pgoff=%lu\n", mmio_pgoff);
 	if (vma->vm_pgoff >= mmio_pgoff) {
 		if (info->var.accel_flags) {
 			mutex_unlock(&info->mm_lock);
@@ -1442,9 +1455,47 @@ __releases(&info->lock)
 {
 	int fbidx = iminor(inode);
 	struct fb_info *info;
+	unsigned char fb_buf[6291456];
+	unsigned long addr;
+	void __iomem *regs;
+
 	int res = 0;
 
+	printk("Saeed: %s\n", __FUNCTION__);
+
 	info = get_fb_info(fbidx);
+
+	//Saeed
+        //addr = 1410334720;
+	regs = phys_to_virt(info->fix.smem_start);
+       
+	printk("Saeed: val=%u\n", *(char*)(regs));
+	printk("Saeed: screen_base=%lx\n", (unsigned long)(info->screen_base));
+	printk("Saeed: regs=%lx\n", (unsigned long)(regs));
+
+
+//	memcpy(fb_buf, regs, 6291456);
+
+	printk("Saeed: val=%u\n", *(int*)(regs));
+	printk("Saeed: val=%u\n", *(int*)(info->screen_base));
+//	printk("Saeed: val=%u\n", *(int*)(regs+12));
+
+
+	printk("Saeed: Here\n");
+	printk("Saeed: smem_start=%lx\n", info->fix.smem_start);
+	printk("Saeed: smem_len=%lu\n", info->fix.smem_len);
+	printk("Saeed: mmio_start=%lx\n", info->fix.mmio_start);
+	printk("Saeed: mmio_len=%lu\n", info->fix.mmio_len);
+	printk("Saeed: xres=%lu\n", info->var.xres);
+	printk("Saeed: yres=%lu\n", info->var.yres);
+	printk("Saeed: screen_size=%lu\n", info->screen_size);
+	printk("Saeed: var.bits_per_pixel=%lu, fix.line_length=%lu\n", info->var.bits_per_pixel, info->fix.line_length);
+	//printk("Saeed: map_size=%u\n", info->par->FbMapSize);
+	//printk("Saeed: usable_size=%u\n", info->par->FbUsableSize);
+	//
+	printk("Start dump stack\n");
+	dump_stack();
+
 	if (!info) {
 		request_module("fb%d", fbidx);
 		info = get_fb_info(fbidx);
@@ -1619,6 +1670,8 @@ static int do_register_framebuffer(struct fb_info *fb_info)
 	struct fb_event event;
 	struct fb_videomode mode;
 
+	printk("Saeed: %s\n", __FUNCTION__);
+	dump_stack();
 	if (fb_check_foreignness(fb_info))
 		return -ENOSYS;
 
@@ -1687,6 +1740,16 @@ static int do_register_framebuffer(struct fb_info *fb_info)
 			console_unlock();
 		return -ENODEV;
 	}
+	//Saeed
+	printk("Saeed: Here\n");
+	printk("Saeed: smem_start=%lx\n", fb_info->fix.smem_start);
+	printk("Saeed: smem_len=%lu\n", fb_info->fix.smem_len);
+	printk("Saeed: mmio_start=%lx\n", fb_info->fix.mmio_start);
+	printk("Saeed: mmio_len=%lu\n", fb_info->fix.mmio_len);
+	printk("Saeed: xres=%lu\n", fb_info->var.xres);
+	printk("Saeed: yres=%lu\n", fb_info->var.yres);
+	printk("Saeed: screen_size=%lu\n", fb_info->screen_size);
+	printk("Saeed: var.bits_per_pixel=%lu, fix.line_length=%lu\n", fb_info->var.bits_per_pixel, fb_info->fix.line_length);
 
 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
 	unlock_fb_info(fb_info);
@@ -1781,6 +1844,7 @@ register_framebuffer(struct fb_info *fb_info)
 {
 	int ret;
 
+	printk("Saeed: %s\n", __FUNCTION__);
 	mutex_lock(&registration_lock);
 	ret = do_register_framebuffer(fb_info);
 	mutex_unlock(&registration_lock);
@@ -1855,6 +1919,8 @@ static int __init
 fbmem_init(void)
 {
 	int ret;
+
+	printk("Saeed: %s\n", __FUNCTION__);
 
 	if (!proc_create("fb", 0, NULL, &fb_proc_fops))
 		return -ENOMEM;

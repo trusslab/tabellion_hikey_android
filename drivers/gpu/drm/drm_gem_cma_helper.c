@@ -59,13 +59,25 @@ __drm_gem_cma_create(struct drm_device *drm, size_t size)
 	struct drm_gem_object *gem_obj;
 	int ret;
 
-	if (drm->driver->gem_create_object)
+	printk("Saeed13: %s\n", __FUNCTION__);
+
+	if (drm->driver->gem_create_object) {
+		printk("Saeed13 [1]: %s\n", __FUNCTION__);
 		gem_obj = drm->driver->gem_create_object(drm, size);
-	else
+	}
+	else {
+		printk("Saeed13 [2]: %s\n", __FUNCTION__);
 		gem_obj = kzalloc(sizeof(*cma_obj), GFP_KERNEL);
+		printk("Saeed13 [2.1]: %s, %lx\n", __FUNCTION__, (unsigned long)gem_obj);
+		printk("Saeed15 [2.2]: %s, size=%lu\n", __FUNCTION__, sizeof(*cma_obj));
+	}
 	if (!gem_obj)
 		return ERR_PTR(-ENOMEM);
 	cma_obj = container_of(gem_obj, struct drm_gem_cma_object, base);
+
+	printk("Saeed15 [2.3]: %s, %lx\n", __FUNCTION__, (unsigned long)cma_obj->paddr);
+
+//	printk("Saeed15 [2.4]: %s, %lx\n", __FUNCTION__, (unsigned long)cma_obj->base);
 
 	ret = drm_gem_object_init(drm, gem_obj, size);
 	if (ret)
@@ -102,6 +114,8 @@ struct drm_gem_cma_object *drm_gem_cma_create(struct drm_device *drm,
 {
 	struct drm_gem_cma_object *cma_obj;
 	int ret;
+	
+	printk("Saeed14: %s\n", __FUNCTION__);
 
 	size = round_up(size, PAGE_SIZE);
 
@@ -109,8 +123,16 @@ struct drm_gem_cma_object *drm_gem_cma_create(struct drm_device *drm,
 	if (IS_ERR(cma_obj))
 		return cma_obj;
 
+	printk("Saeed17: %s, %lx, size=%u\n", __FUNCTION__, (unsigned long)cma_obj->paddr, (unsigned int)size);
+//	printk("Saeed16: %s, %lx\n", __FUNCTION__, (unsigned long)&cma_obj->paddr);
+
 	cma_obj->vaddr = dma_alloc_wc(drm->dev, size, &cma_obj->paddr,
 				      GFP_KERNEL | __GFP_NOWARN);
+	
+	printk("Saeed17: %s, vaddr=%lx\n", __FUNCTION__, (unsigned long)cma_obj->vaddr);
+	printk("Saeed17: %s, paddr=%lx\n", __FUNCTION__, (unsigned long)cma_obj->paddr);
+//	printk("Saeed16: %s, %lx\n", __FUNCTION__, (unsigned long)&cma_obj->paddr);
+
 	if (!cma_obj->vaddr) {
 		dev_err(drm->dev, "failed to allocate buffer with size %zu\n",
 			size);
@@ -118,6 +140,7 @@ struct drm_gem_cma_object *drm_gem_cma_create(struct drm_device *drm,
 		goto error;
 	}
 
+	printk("Saeed14: %s end\n", __FUNCTION__);
 	return cma_obj;
 
 error:
@@ -151,6 +174,7 @@ drm_gem_cma_create_with_handle(struct drm_file *file_priv,
 	struct drm_gem_object *gem_obj;
 	int ret;
 
+	printk("Saeed13: %s\n", __FUNCTION__);
 	cma_obj = drm_gem_cma_create(drm, size);
 	if (IS_ERR(cma_obj))
 		return cma_obj;
@@ -219,6 +243,8 @@ int drm_gem_cma_dumb_create_internal(struct drm_file *file_priv,
 	unsigned int min_pitch = DIV_ROUND_UP(args->width * args->bpp, 8);
 	struct drm_gem_cma_object *cma_obj;
 
+	printk("Saeed13: %s\n", __FUNCTION__);
+
 	if (args->pitch < min_pitch)
 		args->pitch = min_pitch;
 
@@ -255,6 +281,7 @@ int drm_gem_cma_dumb_create(struct drm_file *file_priv,
 {
 	struct drm_gem_cma_object *cma_obj;
 
+	printk("Saeed13: %s\n", __FUNCTION__);
 	args->pitch = DIV_ROUND_UP(args->width * args->bpp, 8);
 	args->size = args->pitch * args->height;
 
@@ -442,6 +469,8 @@ drm_gem_cma_prime_import_sg_table(struct drm_device *dev,
 				  struct sg_table *sgt)
 {
 	struct drm_gem_cma_object *cma_obj;
+
+	printk("Saeed15: %s\n", __FUNCTION__);
 
 	if (sgt->nents != 1)
 		return ERR_PTR(-EINVAL);

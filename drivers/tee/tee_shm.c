@@ -24,6 +24,8 @@ static void tee_shm_release(struct tee_shm *shm)
 {
 	struct tee_device *teedev = shm->teedev;
 
+	printk("Saeed: %s\n", __FUNCTION__);
+
 	mutex_lock(&teedev->mutex);
 	idr_remove(&teedev->idr, shm->id);
 	if (shm->ctx)
@@ -379,6 +381,7 @@ void tee_shm_free(struct tee_shm *shm)
 	 * In the case of driver private memory we call tee_shm_release
 	 * directly instead as it doesn't have a reference counter.
 	 */
+	printk("Saeed: tee_shm_free \n");
 	if (shm->flags & TEE_SHM_DMA_BUF)
 		dma_buf_put(shm->dmabuf);
 	else

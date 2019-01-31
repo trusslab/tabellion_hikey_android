@@ -34,6 +34,11 @@
 #include "kirin_drm_drv.h"
 #include "kirin_ade_reg.h"
 
+//Saeed
+#include <asm/xen/hypercall.h>
+#include <asm/xen/hypervisor.h>
+
+
 #define PRIMARY_CH	ADE_CH1 /* primary plane */
 #define OUT_OVLY	ADE_OVLY2 /* output overlay compositor */
 #define ADE_DEBUG	1
@@ -159,6 +164,8 @@ static void ade_init(struct ade_hw_ctx *ctx)
 	void __iomem *base = ctx->base;
 
 	/* enable clk gate */
+	//printk("Saeed1111: %s\n", __FUNCTION__);
+	//printk("Saeed1111 Base=%lx: %s\n", (unsigned long)base, __FUNCTION__);
 	ade_update_bits(base + ADE_CTRL1, AUTO_CLK_GATE_EN_OFST,
 			AUTO_CLK_GATE_EN, ADE_ENABLE);
 	/* clear overlay */
@@ -205,6 +212,7 @@ static void ade_ldi_set_mode(struct ade_crtc *acrtc,
 	u32 height = mode->vdisplay;
 	u32 hfp, hbp, hsw, vfp, vbp, vsw;
 	u32 plr_flags;
+	////printk("Saeed1111: %s\n", __FUNCTION__);
 
 	plr_flags = (mode->flags & DRM_MODE_FLAG_NVSYNC) ? FLAG_NVSYNC : 0;
 	plr_flags |= (mode->flags & DRM_MODE_FLAG_NHSYNC) ? FLAG_NHSYNC : 0;
@@ -249,6 +257,7 @@ static int ade_power_up(struct ade_hw_ctx *ctx)
 {
 	int ret;
 
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	ret = clk_prepare_enable(ctx->media_noc_clk);
 	if (ret) {
 		DRM_ERROR("failed to enable media_noc_clk (%d)\n", ret);
@@ -361,6 +370,7 @@ static void ade_display_enable(struct ade_crtc *acrtc)
 	void __iomem *base = ctx->base;
 	u32 out_fmt = acrtc->out_format;
 
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	/* enable output overlay compositor */
 	writel(ADE_ENABLE, base + ADE_OVLYX_CTL(OUT_OVLY));
 	ade_update_reload_bit(base, OVLY_OFST + OUT_OVLY, 0);
@@ -384,6 +394,8 @@ static void ade_rdma_dump_regs(void __iomem *base, u32 ch)
 	u32 reg_ctrl, reg_addr, reg_size, reg_stride, reg_space, reg_en;
 	u32 val;
 
+	//printk("Saeed1111: %s\n", __FUNCTION__);
+
 	reg_ctrl = RD_CH_CTRL(ch);
 	reg_addr = RD_CH_ADDR(ch);
 	reg_size = RD_CH_SIZE(ch);
@@ -396,12 +408,29 @@ static void ade_rdma_dump_regs(void __iomem *base, u32 ch)
 	val = readl(base + reg_ctrl);
 	DRM_DEBUG_DRIVER("[rdma%d]: reg_ctrl(0x%08x)\n", ch + 1, val);
 	val = readl(base + reg_addr);
+
+	printk("saeed19: base_virt=%lx", (unsigned long)base);
+	printk("base_ph=%lx\n", (unsigned long)virt_to_phys(base));	
+	//printk("base_ph=%lx\n", (unsigned long)virt_to_bus(base));	
+
+	printk("base+reg_addr_ph=%lx\n", (unsigned long)virt_to_phys(base + reg_addr));
+	
+//	printk("saeed19: reg_addr=%x", reg_addr);
+//	printk("saeed19: reg_addr val=%x", val);
+
 	DRM_DEBUG_DRIVER("[rdma%d]: reg_addr(0x%08x)\n", ch + 1, val);
 	val = readl(base + reg_size);
+	
+//	printk("saeed19: reg_size=%x", reg_size);
+//	printk("saeed19: reg_size val=%x", val);
+	
 	DRM_DEBUG_DRIVER("[rdma%d]: reg_size(0x%08x)\n", ch + 1, val);
 	val = readl(base + reg_stride);
 	DRM_DEBUG_DRIVER("[rdma%d]: reg_stride(0x%08x)\n", ch + 1, val);
 	val = readl(base + reg_space);
+
+//	printk("saeed19: reg_space=%x", reg_space);
+//	printk("saeed19: reg_space val=%x", val);
 	DRM_DEBUG_DRIVER("[rdma%d]: reg_space(0x%08x)\n", ch + 1, val);
 	val = readl(base + reg_en);
 	DRM_DEBUG_DRIVER("[rdma%d]: reg_en(0x%08x)\n", ch + 1, val);
@@ -411,6 +440,7 @@ static void ade_clip_dump_regs(void __iomem *base, u32 ch)
 {
 	u32 val;
 
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	val = ade_read_reload_bit(base, CLIP_OFST + ch);
 	DRM_DEBUG_DRIVER("[clip%d]: reload(%d)\n", ch + 1, val);
 	val = readl(base + ADE_CLIP_DISABLE(ch));
@@ -426,6 +456,7 @@ static void ade_compositor_routing_dump_regs(void __iomem *base, u32 ch)
 	u8 ovly_ch = 0; /* TODO: Only primary plane now */
 	u32 val;
 
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	val = readl(base + ADE_OVLY_CH_XY0(ovly_ch));
 	DRM_DEBUG_DRIVER("[overlay ch%d]: reg_ch_xy0(0x%08x)\n", ovly_ch, val);
 	val = readl(base + ADE_OVLY_CH_XY1(ovly_ch));
@@ -469,11 +500,15 @@ static void ade_dump_regs(void __iomem *base)
 static void ade_dump_regs(void __iomem *base) { }
 #endif
 
+struct drm_crtc* crtc_saeed;
 static void ade_crtc_enable(struct drm_crtc *crtc)
 {
 	struct ade_crtc *acrtc = to_ade_crtc(crtc);
 	struct ade_hw_ctx *ctx = acrtc->ctx;
 	int ret;
+
+	//Saeed
+	crtc_saeed = crtc;
 
 	if (acrtc->enable)
 		return;
@@ -511,6 +546,7 @@ static void ade_crtc_mode_set_nofb(struct drm_crtc *crtc)
 	struct drm_display_mode *mode = &crtc->state->mode;
 	struct drm_display_mode *adj_mode = &crtc->state->adjusted_mode;
 
+	printk("Saeed9: %s\n", __FUNCTION__);
 	if (!ctx->power_on)
 		(void)ade_power_up(ctx);
 	ade_ldi_set_mode(acrtc, mode, adj_mode);
@@ -574,6 +610,7 @@ static const struct drm_crtc_funcs ade_crtc_funcs = {
 	.atomic_duplicate_state	= drm_atomic_helper_crtc_duplicate_state,
 	.atomic_destroy_state	= drm_atomic_helper_crtc_destroy_state,
 };
+struct drm_device *gg_dev;
 
 static int ade_crtc_init(struct drm_device *dev, struct drm_crtc *crtc,
 			 struct drm_plane *plane)
@@ -582,6 +619,9 @@ static int ade_crtc_init(struct drm_device *dev, struct drm_crtc *crtc,
 	struct device_node *port;
 	int ret;
 
+	//Saeed
+	gg_dev = dev;
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	/* set crtc port so that
 	 * drm_of_find_possible_crtcs call works
 	 */
@@ -606,7 +646,9 @@ static int ade_crtc_init(struct drm_device *dev, struct drm_crtc *crtc,
 
 	return 0;
 }
-
+int ccc = 0;
+void* argg;
+void* buff;
 static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 			 u32 ch, u32 y, u32 in_h, u32 fmt)
 {
@@ -616,6 +658,9 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	u32 stride = fb->pitches[0];
 	u32 addr = (u32)obj->paddr + y * stride;
 
+	printk("Saeed20: paddr + y*stride %lx\n", (unsigned long)addr);
+
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	DRM_DEBUG_DRIVER("rdma%d: (y=%d, height=%d), stride=%d, paddr=0x%x\n",
 			 ch + 1, y, in_h, stride, (u32)obj->paddr);
 	format_name = drm_get_format_name(fb->pixel_format);
@@ -635,11 +680,50 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	 * TODO: set rotation
 	 */
 	writel((fmt << 16) & 0x1f0000, base + reg_ctrl);
-	writel(addr, base + reg_addr);
+	//Saeed
+	if(ccc<881) {
+		writel(addr, base + reg_addr);
+	}
 	writel((in_h << 16) | stride, base + reg_size);
 	writel(stride, base + reg_stride);
 	writel(in_h * stride, base + reg_space);
 	writel(ADE_ENABLE, base + reg_en);
+	if(ccc==855) {
+//		printk("Saeed: start freezein kernel [1]\n");
+//		printk("Saeed: start freezein kernel [2]\n");
+		buff = kmalloc(4, GFP_KERNEL);
+//		argg = kmalloc(4, GFP_KERNEL);
+//		//printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff) >> PAGE_SHIFT));
+		printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff)));
+//		printk("Saeed21: virt=%lx\n", (unsigned long)(buff));
+//		
+//		printk("Saeed: start freezein kernel [3]\n");
+//		//*(int*)argg = (int)(virt_to_phys(buff) >> PAGE_SHIFT);
+//		*(int*)argg = (int)(virt_to_phys(buff));
+		*(int*)buff = 0x12345678;
+//		HYPERVISOR_freeze_op(argg);
+	}
+	if(ccc==880){
+		printk("Saeed: start freezein kernel [1]\n");
+		argg = kmalloc(4, GFP_KERNEL);
+//		//printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff) >> PAGE_SHIFT));
+		printk("Saeed22: base virt=%lx\n", (unsigned long)(base));
+
+		//This doesn't make sense for ioremapped memory
+		//printk("Saeed22: base phys=%lx\n", (unsigned long)(virt_to_phys(base)));
+
+		printk("reg val=%lx, reg_addr=%x\n", readl(base + reg_addr), reg_addr);
+
+		*(int*)buff = 0x12345678;
+		*(int*)argg = (int)(virt_to_phys(buff));
+		//*(int*)argg = (int)(virt_to_phys(base));
+		//writel(base + reg_addr, 0x55100000);
+		printk("Saeed23: buff val=%lx\n", (unsigned long)readl(buff));
+		//HYPERVISOR_freeze_op(argg);
+	}
+	if(ccc>881)
+		HYPERVISOR_freeze_op(argg);
+
 	ade_update_reload_bit(base, RDMA_OFST + ch, 0);
 }
 
@@ -659,6 +743,7 @@ static void ade_clip_set(void __iomem *base, u32 ch, u32 fb_w, u32 x,
 	u32 disable_val;
 	u32 clip_left;
 	u32 clip_right;
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 
 	/*
 	 * clip width, no need to clip height
@@ -684,12 +769,14 @@ static void ade_clip_set(void __iomem *base, u32 ch, u32 fb_w, u32 x,
 
 static void ade_clip_disable(void __iomem *base, u32 ch)
 {
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	writel(1, base + ADE_CLIP_DISABLE(ch));
 	ade_update_reload_bit(base, CLIP_OFST + ch, 1);
 }
 
 static bool has_Alpha_channel(int format)
 {
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	switch (format) {
 	case ADE_ARGB_8888:
 	case ADE_ABGR_8888:
@@ -709,6 +796,7 @@ static void ade_get_blending_params(u32 fmt, u8 glb_alpha, u8 *alp_mode,
 	/*
 	 * get alp_mode
 	 */
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	if (has_alpha && glb_alpha < 255)
 		*alp_mode = ADE_ALP_PIXEL_AND_GLB;
 	else if (has_alpha)
@@ -735,6 +823,7 @@ static void ade_compositor_routing_set(void __iomem *base, u8 ch,
 	u8 alp_sel;
 	u8 under_alp_sel;
 	u8 alp_mode;
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 
 	ade_get_blending_params(fmt, glb_alpha, &alp_mode, &alp_sel,
 				&under_alp_sel);
@@ -769,6 +858,14 @@ static void ade_compositor_routing_disable(void __iomem *base, u32 ch)
 /*
  * Typicaly, a channel looks like: DMA-->clip-->scale-->ctrans-->compositor
  */
+
+void test_saeed(void)
+{
+	printk("Saeed test successful!\n");
+}
+EXPORT_SYMBOL(test_saeed);
+
+//int ccc=0;
 static void ade_update_channel(struct ade_plane *aplane,
 			       struct drm_framebuffer *fb, int crtc_x,
 			       int crtc_y, unsigned int crtc_w,
@@ -781,6 +878,10 @@ static void ade_update_channel(struct ade_plane *aplane,
 	u32 ch = aplane->ch;
 	u32 in_w;
 	u32 in_h;
+	printk("Saeed10: %s, %d\n", __FUNCTION__, ccc);
+	ccc++;
+	
+	//printk("Saeed9 Base=%lx: %s\n", (unsigned long)base, __FUNCTION__);
 
 	DRM_DEBUG_DRIVER("channel%d: src:(%d, %d)-%dx%d, crtc:(%d, %d)-%dx%d",
 			 ch + 1, src_x, src_y, src_w, src_h,
@@ -800,6 +901,8 @@ static void ade_update_channel(struct ade_plane *aplane,
 
 	/* 5) compositor routing setting */
 	ade_compositor_routing_set(base, ch, crtc_x, crtc_y, in_w, in_h, fmt);
+	
+	printk("Saeed9: %s, end\n", __FUNCTION__);
 }
 
 static void ade_disable_channel(struct ade_plane *aplane)
@@ -819,13 +922,16 @@ static void ade_disable_channel(struct ade_plane *aplane)
 	/* disable compositor routing */
 	ade_compositor_routing_disable(base, ch);
 }
-
+bool checkone = 0;
 static int ade_plane_atomic_check(struct drm_plane *plane,
 				  struct drm_plane_state *state)
 {
 	struct drm_framebuffer *fb = state->fb;
 	struct drm_crtc *crtc = state->crtc;
 	struct drm_crtc_state *crtc_state;
+
+	//printk("Saeed9: %s\n", __FUNCTION__);
+
 	u32 src_x = state->src_x >> 16;
 	u32 src_y = state->src_y >> 16;
 	u32 src_w = state->src_w >> 16;
@@ -835,6 +941,18 @@ static int ade_plane_atomic_check(struct drm_plane *plane,
 	u32 crtc_w = state->crtc_w;
 	u32 crtc_h = state->crtc_h;
 	u32 fmt;
+//	//printk("Saeed1111: %s\n", __FUNCTION__);
+
+//	struct drm_gem_cma_object *obj1 = drm_fb_cma_get_gem_obj(fb, 0);
+//	struct drm_gem_cma_object *obj2 = drm_fb_cma_get_gem_obj(fb, 1);
+
+// Saeed: crash
+//	if(!checkone) {
+//		//printk("Saeed1111 addr1=%lu\n", (u32)obj1->paddr);
+////		//printk("Saeed1111 addr2=%lu\n", (u32)obj2->paddr);
+//		checkone = 1;
+//	}
+//
 
 	if (!crtc || !fb)
 		return 0;
@@ -866,16 +984,78 @@ static int ade_plane_atomic_check(struct drm_plane *plane,
 	return 0;
 }
 
+bool just_once = 0;
+struct drm_framebuffer *p;
+
+//struct hypercall_args
+//{
+//	unsigned long paddr;	
+//};
 static void ade_plane_atomic_update(struct drm_plane *plane,
 				    struct drm_plane_state *old_state)
 {
+	//Saeed
+	int rett;
+	struct drm_gem_cma_object *cma_obj;
+	struct drm_framebuffer *fb = plane->state->fb;
+	struct drm_gem_cma_object *obj;
+	unsigned long src_addr = 0x54100000;
+	//struct hypercall_args *args = (struct hypercall_args*)malloc(sizeof(struct hypercall_args));
+
+//	struct drm_device *dev;
+	//
 	struct drm_plane_state	*state	= plane->state;
 	struct ade_plane *aplane = to_ade_plane(plane);
 
+	if(!just_once) {
+		just_once = 1;
+		printk("Saeed10: %s\n", __FUNCTION__);
+		dump_stack();
+	}
+
+	//Saeed
+	//This freezes correctly in kernel
+	if(ccc==850) {
+//		//p = kmalloc(sizeof (struct drm_framebuffer), GFP_KERNEL);
+		cma_obj = drm_fb_cma_get_gem_obj(fb, 0);
+////		rett = HYPERVISOR_xen_version(0, NULL);
+
+		// Saeed: rdma set function update the reg_addr value later later
+		// I only update the object paddr
+//		writel(addr, base + reg_addr);
+//		reg_addr = RD_CH_ADDR(ch);
+
+//		
+		obj = drm_gem_cma_create(gg_dev, 16588800);
+		printk("Saeed20: paddr=%lx\n", (unsigned long)obj->paddr);
+		memcpy(phys_to_virt((unsigned long)obj->paddr), phys_to_virt((unsigned long)src_addr), 16588800/2);
+		memcpy(phys_to_virt((unsigned long)obj->paddr) + 16588800/2, phys_to_virt((unsigned long)src_addr), 16588800/2);
+		
+		//Let's do this in Xen, after the white page
+		//cma_obj->paddr = obj->paddr;
+
+//		rett = HYPERVISOR_freeze_op(NULL);
+////		printk("Saeed19: XEN ret=%d\n", rett);
+//		args->paddr = (unsigned long)(obj->paddr);
+//		rett = HYPERVISOR_freeze_op(args);
+		printk("Saeed19: XEN ret=%d\n", rett);
+	}
 	ade_update_channel(aplane, state->fb, state->crtc_x, state->crtc_y,
 			   state->crtc_w, state->crtc_h,
 			   state->src_x >> 16, state->src_y >> 16,
 			   state->src_w >> 16, state->src_h >> 16);
+//	if(ccc>850)
+//		rett = HYPERVISOR_freeze_op(NULL);
+
+//	}
+//	else {
+//		cma_obj = drm_fb_cma_get_gem_obj(fb, 0);
+//		memcpy(fb, p, 10000);
+//		printk("Saeed12: %lu\n", (unsigned long)fb->offsets[0]);
+//		printk("Saeed12: %lx\n", (unsigned long)cma_obj->paddr);
+//	//	ade_crtc_disable(crtc_saeed);
+//	//	ade_plane_atomic_disable(plane, plane->state);
+//	}
 }
 
 static void ade_plane_atomic_disable(struct drm_plane *plane,
@@ -908,6 +1088,7 @@ static int ade_plane_init(struct drm_device *dev, struct ade_plane *aplane,
 	const u32 *fmts;
 	u32 fmts_cnt;
 	int ret = 0;
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 
 	/* get  properties */
 	fmts_cnt = ade_get_channel_formats(aplane->ch, &fmts);
@@ -931,8 +1112,10 @@ static int ade_dts_parse(struct platform_device *pdev, struct ade_hw_ctx *ctx)
 	struct resource *res;
 	struct device *dev = &pdev->dev;
 	struct device_node *np = pdev->dev.of_node;
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	//Saeed: ioremap the register holding the address for FB
 	ctx->base = devm_ioremap_resource(dev, res);
 	if (IS_ERR(ctx->base)) {
 		DRM_ERROR("failed to remap ade io base\n");
@@ -988,6 +1171,7 @@ static int ade_drm_init(struct drm_device *dev)
 	int ret;
 	int i;
 
+	//printk("Saeed1111: %s\n", __FUNCTION__);
 	ade = devm_kzalloc(dev->dev, sizeof(*ade), GFP_KERNEL);
 	if (!ade) {
 		DRM_ERROR("failed to alloc ade_data\n");
@@ -1009,7 +1193,9 @@ static int ade_drm_init(struct drm_device *dev)
 	 * TODO: Now only support primary plane, overlay planes
 	 * need to do.
 	 */
+	//printk("Saeed1111, ADE_CH_NUM=%d\n", ADE_CH_NUM);
 	for (i = 0; i < ADE_CH_NUM; i++) {
+		printk("Saeed1111, PLANEINIT\n");
 		aplane = &ade->aplane[i];
 		aplane->ch = i;
 		aplane->ctx = ctx;

@@ -33,6 +33,8 @@ static int kirin_drm_kms_cleanup(struct drm_device *dev)
 {
 	struct kirin_drm_private *priv = dev->dev_private;
 
+	printk("Saeed2222_DRM: %s\n", __FUNCTION__);
+
 #ifdef CONFIG_DRM_FBDEV_EMULATION
 	if (priv->fbdev) {
 		drm_fbdev_cma_fini(priv->fbdev);
@@ -53,6 +55,7 @@ static int kirin_drm_kms_cleanup(struct drm_device *dev)
 static void kirin_fbdev_output_poll_changed(struct drm_device *dev)
 {
 	struct kirin_drm_private *priv = dev->dev_private;
+	printk("Saeed2222_DRM: %s\n", __FUNCTION__);
 
 	if (priv->fbdev) {
 		drm_fbdev_cma_hotplug_event(priv->fbdev);
@@ -77,6 +80,7 @@ static const struct drm_mode_config_funcs kirin_drm_mode_config_funcs = {
 
 static void kirin_drm_mode_config_init(struct drm_device *dev)
 {
+	printk("Saeed2222_DRM: %s\n", __FUNCTION__);
 	dev->mode_config.min_width = 0;
 	dev->mode_config.min_height = 0;
 
@@ -90,10 +94,13 @@ static int kirin_drm_kms_init(struct drm_device *dev)
 {
 	struct kirin_drm_private *priv;
 	int ret;
+	printk("Saeed2222_DRM: %s\n", __FUNCTION__);
 
 	priv = devm_kzalloc(dev->dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
+
+	printk("Saeed2222: %s\n", __FUNCTION__);
 
 	dev->dev_private = priv;
 	dev_set_drvdata(dev->dev, dev);
@@ -206,6 +213,7 @@ static int kirin_drm_bind(struct device *dev)
 	struct drm_device *drm_dev;
 	int ret;
 
+	printk("Saeed2222_DRM: %s\n", __FUNCTION__);
 	drm_dev = drm_dev_alloc(driver, dev);
 	if (IS_ERR(drm_dev))
 		return PTR_ERR(drm_dev);
@@ -219,6 +227,8 @@ static int kirin_drm_bind(struct device *dev)
 	ret = drm_dev_register(drm_dev, 0);
 	if (ret)
 		goto err_kms_cleanup;
+
+	printk("Saeed2222: %s\n", __FUNCTION__);
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
@@ -284,6 +294,7 @@ static int kirin_drm_platform_probe(struct platform_device *pdev)
 	struct component_match *match = NULL;
 	struct device_node *remote;
 
+	printk("Saeed2222_DRM: %s\n", __FUNCTION__);
 	dc_ops = (struct kirin_dc_ops *)of_device_get_match_data(dev);
 	if (!dc_ops) {
 		DRM_ERROR("failed to get dt id data\n");

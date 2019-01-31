@@ -268,6 +268,7 @@ static int kirin_drm_bind(struct device *dev)
 	if (ret)
 		goto err_drm_dev_unregister;
 
+	printk("Saeed: kiri960 %s\n", __FUNCTION__);
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
 		 driver->date, drm_dev->primary->index);

@@ -702,6 +702,8 @@ int drm_framebuffer_init(struct drm_device *dev, struct drm_framebuffer *fb,
 	int ret;
 
 	INIT_LIST_HEAD(&fb->filp_head);
+
+	printk("SAEED8: %s\n", __FUNCTION__);
 	fb->dev = dev;
 	fb->funcs = funcs;
 
