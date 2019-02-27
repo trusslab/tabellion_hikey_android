@@ -1316,6 +1316,7 @@ static int vb2_start_streaming(struct vb2_queue *q)
 	struct vb2_buffer *vb;
 	int ret;
 
+	printk("Saeed25: %s\n", __FUNCTION__);
 	/*
 	 * If any buffers were queued before streamon,
 	 * we can now pass them to driver for processing.
@@ -1699,6 +1700,8 @@ static void __vb2_queue_cancel(struct vb2_queue *q)
 int vb2_core_streamon(struct vb2_queue *q, unsigned int type)
 {
 	int ret;
+
+	printk("Saeed25: %s\n", __FUNCTION__);
 
 	if (type != q->type) {
 		dprintk(1, "invalid stream type\n");

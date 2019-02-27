@@ -1394,6 +1394,7 @@ static int uvc_alloc_urb_buffers(struct uvc_streaming *stream,
 	unsigned int npackets;
 	unsigned int i;
 
+	printk("Saeed28: %s\n", __FUNCTION__);
 	/* Buffers are already allocated, bail out. */
 	if (stream->urb_size)
 		return stream->urb_size / psize;
@@ -1402,18 +1403,25 @@ static int uvc_alloc_urb_buffers(struct uvc_streaming *stream,
 	 * payloads across multiple URBs.
 	 */
 	npackets = DIV_ROUND_UP(size, psize);
+	printk("Saeed28: size=%u\n", size);
+	printk("Saeed28: psize=%u\n", psize);
+	printk("Saeed28: npackets=%u\n", npackets);
 	if (npackets > UVC_MAX_PACKETS)
-		npackets = UVC_MAX_PACKETS;
+		npackets = UVC_MAX_PACKETS; //Saeed: This is called
 
 	/* Retry allocations until one succeed. */
 	for (; npackets > 1; npackets /= 2) {
+		printk("Saeed28: npackets [2]=%u\n", npackets);
 		for (i = 0; i < UVC_URBS; ++i) {
 			stream->urb_size = psize * npackets;
+			printk("Saeed28: urb_size[3]=%u\n", stream->urb_size);
 #ifndef CONFIG_DMA_NONCOHERENT
+			printk("Saeed28: [4] %s\n", "CONFIG_DMA_NONCOHERENT");
 			stream->urb_buffer[i] = usb_alloc_coherent(
 				stream->dev->udev, stream->urb_size,
 				gfp_flags | __GFP_NOWARN, &stream->urb_dma[i]);
 #else
+			printk("Saeed28: [4] %s\n", "KMALLOC");
 			stream->urb_buffer[i] =
 			    kmalloc(stream->urb_size, gfp_flags | __GFP_NOWARN);
 #endif
@@ -1496,10 +1504,14 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
 	u16 psize;
 	u32 size;
 
+	printk("Saeed29: %s\n", __FUNCTION__);
 	psize = uvc_endpoint_max_bpi(stream->dev->udev, ep);
 	size = stream->ctrl.dwMaxVideoFrameSize;
 
 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
+
+	//Saeed
+	//
 	if (npackets == 0)
 		return -ENOMEM;
 
@@ -1519,6 +1531,7 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
 #ifndef CONFIG_DMA_NONCOHERENT
 		urb->transfer_flags = URB_ISO_ASAP | URB_NO_TRANSFER_DMA_MAP;
 		urb->transfer_dma = stream->urb_dma[i];
+		printk("Saeed29: %lx\n", (unsigned long)urb->transfer_dma);
 #else
 		urb->transfer_flags = URB_ISO_ASAP;
 #endif
@@ -1527,6 +1540,14 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
 		urb->complete = uvc_video_complete;
 		urb->number_of_packets = npackets;
 		urb->transfer_buffer_length = size;
+		
+		printk("Saeed29: transfer_buffer=%lx\n", (unsigned long)urb->transfer_buffer);
+		printk("Saeed29: number_of_packets=%u\n", (unsigned int)urb->number_of_packets);
+		printk("Saeed29: transfer_buffer_length=%u\n", (unsigned int)urb->transfer_buffer_length);
+		printk("Saeed29: interval=%u\n", (unsigned long)urb->interval);
+		printk("Saeed29: npackets=%u\n", (unsigned int)npackets);
+		printk("Saeed29: psize=%u\n", (unsigned int)psize);
+		printk("Saeed29: size=%u\n", (unsigned int)size);
 
 		for (j = 0; j < npackets; ++j) {
 			urb->iso_frame_desc[j].offset = j * psize;
@@ -1551,6 +1572,7 @@ static int uvc_init_video_bulk(struct uvc_streaming *stream,
 	u16 psize;
 	u32 size;
 
+	printk("Saeed29: %s\n", __FUNCTION__);
 	psize = usb_endpoint_maxp(&ep->desc) & 0x7ff;
 	size = stream->ctrl.dwMaxPayloadTransferSize;
 	stream->bulk.max_payload_size = size;
@@ -1602,6 +1624,7 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
 	unsigned int i;
 	int ret;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	stream->sequence = -1;
 	stream->last_fid = -1;
 	stream->bulk.header_size = 0;
@@ -1864,6 +1887,8 @@ int uvc_video_init(struct uvc_streaming *stream)
 int uvc_video_enable(struct uvc_streaming *stream, int enable)
 {
 	int ret;
+
+	printk("Saeed28: %s\n", __FUNCTION__);
 
 	if (!enable) {
 		uvc_uninit_video(stream, 1);

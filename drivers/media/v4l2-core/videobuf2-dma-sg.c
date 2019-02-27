@@ -60,6 +60,8 @@ static int vb2_dma_sg_alloc_compacted(struct vb2_dma_sg_buf *buf,
 	unsigned int last_page = 0;
 	int size = buf->size;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
+
 	while (size > 0) {
 		struct page *pages;
 		int order;
@@ -104,6 +106,7 @@ static void *vb2_dma_sg_alloc(struct device *dev, unsigned long dma_attrs,
 	int ret;
 	int num_pages;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (WARN_ON(!dev))
 		return ERR_PTR(-EINVAL);
 
@@ -176,6 +179,7 @@ static void vb2_dma_sg_put(void *buf_priv)
 	struct sg_table *sgt = &buf->sg_table;
 	int i = buf->num_pages;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (atomic_dec_and_test(&buf->refcount)) {
 		dprintk(1, "%s: Freeing buffer of %d pages\n", __func__,
 			buf->num_pages);
@@ -225,6 +229,7 @@ static void *vb2_dma_sg_get_userptr(struct device *dev, unsigned long vaddr,
 	struct sg_table *sgt;
 	struct frame_vector *vec;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (WARN_ON(!dev))
 		return ERR_PTR(-EINVAL);
 
@@ -330,6 +335,7 @@ static int vb2_dma_sg_mmap(void *buf_priv, struct vm_area_struct *vma)
 	unsigned long usize = vma->vm_end - vma->vm_start;
 	int i = 0;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (!buf) {
 		printk(KERN_ERR "No memory to map\n");
 		return -EINVAL;
@@ -379,6 +385,7 @@ static int vb2_dma_sg_dmabuf_ops_attach(struct dma_buf *dbuf, struct device *dev
 	struct vb2_dma_sg_buf *buf = dbuf->priv;
 	int ret;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	attach = kzalloc(sizeof(*attach), GFP_KERNEL);
 	if (!attach)
 		return -ENOMEM;
@@ -517,6 +524,7 @@ static struct dma_buf *vb2_dma_sg_get_dmabuf(void *buf_priv, unsigned long flags
 	struct dma_buf *dbuf;
 	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	exp_info.ops = &vb2_dma_sg_dmabuf_ops;
 	exp_info.size = buf->size;
 	exp_info.flags = flags;
@@ -544,6 +552,7 @@ static int vb2_dma_sg_map_dmabuf(void *mem_priv)
 	struct vb2_dma_sg_buf *buf = mem_priv;
 	struct sg_table *sgt;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (WARN_ON(!buf->db_attach)) {
 		pr_err("trying to pin a non attached buffer\n");
 		return -EINVAL;
@@ -610,6 +619,7 @@ static void *vb2_dma_sg_attach_dmabuf(struct device *dev, struct dma_buf *dbuf,
 	struct vb2_dma_sg_buf *buf;
 	struct dma_buf_attachment *dba;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (WARN_ON(!dev))
 		return ERR_PTR(-EINVAL);
 

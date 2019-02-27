@@ -135,12 +135,19 @@ static void vb2_dc_put(void *buf_priv)
 	kfree(buf);
 }
 
+bool ttt = 0;
 static void *vb2_dc_alloc(struct device *dev, unsigned long attrs,
 			  unsigned long size, enum dma_data_direction dma_dir,
 			  gfp_t gfp_flags)
 {
 	struct vb2_dc_buf *buf;
 
+	printk("Saeed27: %s, size=%lu\n", __FUNCTION__, size);
+
+	if(!ttt) {
+		ttt = 1;
+		dump_stack();
+	}
 	if (WARN_ON(!dev))
 		return ERR_PTR(-EINVAL);
 
@@ -180,6 +187,7 @@ static int vb2_dc_mmap(void *buf_priv, struct vm_area_struct *vma)
 	struct vb2_dc_buf *buf = buf_priv;
 	int ret;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (!buf) {
 		printk(KERN_ERR "No buffer to map\n");
 		return -EINVAL;
@@ -231,6 +239,7 @@ static int vb2_dc_dmabuf_ops_attach(struct dma_buf *dbuf, struct device *dev,
 	struct vb2_dc_buf *buf = dbuf->priv;
 	int ret;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	attach = kzalloc(sizeof(*attach), GFP_KERNEL);
 	if (!attach)
 		return -ENOMEM;
@@ -287,6 +296,7 @@ static struct sg_table *vb2_dc_dmabuf_ops_map(
 	struct mutex *lock = &db_attach->dmabuf->lock;
 	struct sg_table *sgt;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	mutex_lock(lock);
 
 	sgt = &attach->sgt;
@@ -396,6 +406,7 @@ static struct dma_buf *vb2_dc_get_dmabuf(void *buf_priv, unsigned long flags)
 	exp_info.flags = flags;
 	exp_info.priv = buf;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (!buf->sgt_base)
 		buf->sgt_base = vb2_dc_get_base_sgt(buf);
 
@@ -485,6 +496,7 @@ static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
 	unsigned long contig_size;
 	unsigned long dma_align = dma_get_cache_alignment();
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	/* Only cache aligned DMA transfers are reliable */
 	if (!IS_ALIGNED(vaddr | size, dma_align)) {
 		pr_debug("user data must be aligned to %lu bytes\n", dma_align);
@@ -599,6 +611,7 @@ static int vb2_dc_map_dmabuf(void *mem_priv)
 	struct sg_table *sgt;
 	unsigned long contig_size;
 
+	printk("Saeed27: %s\n", __FUNCTION__);
 	if (WARN_ON(!buf->db_attach)) {
 		pr_err("trying to pin a non attached buffer\n");
 		return -EINVAL;

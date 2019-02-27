@@ -415,6 +415,8 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 
 		if (urb->number_of_packets <= 0)
 			return -EINVAL;
+
+		//Saeed
 		for (n = 0; n < urb->number_of_packets; n++) {
 			len = urb->iso_frame_desc[n].length;
 			if (len < 0 || len > max)

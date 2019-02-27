@@ -41,6 +41,7 @@ static int __videobuf_dc_alloc(struct device *dev,
 			       struct videobuf_dma_contig_memory *mem,
 			       unsigned long size, gfp_t flags)
 {
+	printk("Saeed26: %s, %lu\n", size);
 	mem->size = size;
 	mem->vaddr = dma_alloc_coherent(dev, mem->size,
 					&mem->dma_handle, flags);
@@ -213,6 +214,7 @@ static struct videobuf_buffer *__videobuf_alloc(size_t size)
 	struct videobuf_dma_contig_memory *mem;
 	struct videobuf_buffer *vb;
 
+	printk("Saeed26: %s, %lu\n", (unsigned long)size);
 	vb = kzalloc(size + sizeof(*mem), GFP_KERNEL);
 	if (vb) {
 		vb->priv = ((char *)vb) + size;

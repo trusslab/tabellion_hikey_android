@@ -783,7 +783,8 @@ static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
 	}
 #endif
 
-	printk("Saeed: %s\n", ____);
+	printk("Saeed: %s\n", __FUNCTION__);
+	printk("Saeed: size=%u\n", (unsigned int)size);
 
 	if (!mask)
 		return NULL;

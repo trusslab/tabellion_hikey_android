@@ -191,6 +191,7 @@ struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
 				       unsigned int align)
 {
 	printk("Saeed18: %s\n", __FUNCTION__);
+	printk("Saeed18: %s, number of pages, count=%u\n", __FUNCTION__, (unsigned int)count);
 	if (align > CONFIG_CMA_ALIGNMENT)
 		align = CONFIG_CMA_ALIGNMENT;
 

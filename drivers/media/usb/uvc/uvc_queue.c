@@ -151,6 +151,7 @@ static int uvc_start_streaming(struct vb2_queue *vq, unsigned int count)
 	unsigned long flags;
 	int ret;
 
+	printk("Saeed26: %s\n", __FUNCTION__);
 	queue->buf_used = 0;
 
 	ret = uvc_video_enable(stream, 1);
@@ -300,6 +301,7 @@ int uvc_queue_streamon(struct uvc_video_queue *queue, enum v4l2_buf_type type)
 	int ret;
 
 	mutex_lock(&queue->mutex);
+	printk("Saeed25: %s\n", __FUNCTION__);
 	ret = vb2_streamon(&queue->queue, type);
 	mutex_unlock(&queue->mutex);
 

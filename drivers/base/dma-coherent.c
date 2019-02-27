@@ -158,6 +158,7 @@ EXPORT_SYMBOL(dma_mark_declared_memory_occupied);
  * Returns 0 if dma_alloc_coherent should continue with allocating from
  * generic memory areas, or !0 if dma_alloc_coherent should return @ret.
  */
+extern bool saeed_tmp;
 int dma_alloc_from_coherent(struct device *dev, ssize_t size,
 				       dma_addr_t *dma_handle, void **ret)
 {
@@ -167,6 +168,10 @@ int dma_alloc_from_coherent(struct device *dev, ssize_t size,
 	int pageno;
 	int dma_memory_map;
 
+	if(saeed_tmp) {
+		dump_stack();
+		saeed_tmp = 0;
+	}
 	printk("Saeed17 [1.1]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 
 	if (!dev)
