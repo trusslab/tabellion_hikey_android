@@ -28,6 +28,8 @@
 #include <media/v4l2-mc.h>
 
 #include <trace/events/vb2.h>
+//Saeed
+#include <linux/fb.h>
 
 static int debug;
 module_param(debug, int, 0644);
@@ -238,6 +240,7 @@ static void __vb2_buf_mem_free(struct vb2_buffer *vb)
 {
 	unsigned int plane;
 
+	//Saeed30
 	for (plane = 0; plane < vb->num_planes; ++plane) {
 		call_void_memop(vb, put, vb->planes[plane].mem_priv);
 		vb->planes[plane].mem_priv = NULL;
@@ -1311,12 +1314,32 @@ EXPORT_SYMBOL_GPL(vb2_core_prepare_buf);
  * buffers back to vb2 in state QUEUED. Check if that happened and if
  * not warn and reclaim them forcefully.
  */
+void log_queue(struct vb2_queue *q, char* fname)
+{
+	//Saeed
+	struct vb2_buffer *my_vb;
+	unsigned int my_plane;
+	int i;
+
+	printk("Saeed30: %s, number of buffers=%d\n", fname, q->num_buffers);
+	for (i=0; i< q->num_buffers; i++) {
+		printk("Saeed30: %s, bufs[%d]:\n", fname, i);
+		my_vb = q->bufs[i];
+	
+		for (my_plane = 0; my_plane < my_vb->num_planes; ++my_plane) {
+			printk("Saeed30: vb->plane.mem_priv=%lx\n", (unsigned long)(my_vb->planes[my_plane].mem_priv));
+			printk("Saeed30: vb->plane.length=%u\n", (unsigned int)(my_vb->planes[my_plane].length));
+			printk("Saeed30: vb->plane.bytesused=%u\n", (unsigned int)(my_vb->planes[my_plane].bytesused));
+		}
+	}
+}
 static int vb2_start_streaming(struct vb2_queue *q)
 {
 	struct vb2_buffer *vb;
 	int ret;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+
+	printk("Saeed30: %s\n", __FUNCTION__);
 	/*
 	 * If any buffers were queued before streamon,
 	 * we can now pass them to driver for processing.
@@ -1328,6 +1351,10 @@ static int vb2_start_streaming(struct vb2_queue *q)
 	q->start_streaming_called = 1;
 	ret = call_qop(q, start_streaming, q,
 		       atomic_read(&q->owned_by_drv_count));
+
+	//Saeed
+	log_queue(q, __FUNCTION__);
+
 	if (!ret)
 		return 0;
 
@@ -1368,6 +1395,8 @@ int vb2_core_qbuf(struct vb2_queue *q, unsigned int index, void *pb)
 {
 	struct vb2_buffer *vb;
 	int ret;
+
+	log_queue(q, __FUNCTION__);
 
 	vb = q->bufs[index];
 
@@ -1517,6 +1546,7 @@ static int __vb2_get_done_vb(struct vb2_queue *q, struct vb2_buffer **vb,
 	unsigned long flags;
 	int ret = 0;
 
+	log_queue(q, __FUNCTION__);
 	/*
 	 * Wait for at least one buffer to become available on the done_list.
 	 */
@@ -1581,11 +1611,55 @@ static void __vb2_dqbuf(struct vb2_buffer *vb)
 		}
 }
 
+bool camera_on = 0;
+EXPORT_SYMBOL(camera_on);
+extern void __iomem *my_base;
+extern struct fb_info* my_fb_info;
+
 int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 		   bool nonblocking)
 {
 	struct vb2_buffer *vb = NULL;
+	struct vb2_buffer *my_vb;
 	int ret;
+	unsigned int *frame_buffer;
+
+	//Saeed
+	unsigned long curr_fb;
+	void* vid_buffer;
+	int vid_size;
+
+	log_queue(q, __FUNCTION__);
+	camera_on = 1;
+	my_vb = q->bufs[0];
+	vid_buffer = vb2_plane_vaddr(my_vb, 0);
+	vid_size = vb2_plane_size(q->bufs[0], 0);
+
+	//writel(my_vb->planes[0].mem_priv, my_base + 0x1008);
+
+	curr_fb = readl(my_base + 0x1008);
+	frame_buffer = phys_to_virt((unsigned long)curr_fb);
+	printk("Saeed30: curr_fb address=%lx\n", (unsigned long)curr_fb);
+	//memcpy(curr_fb, my_vb->planes[0].mem_priv, my_vb->planes[0].length);
+
+	printk("screen_base=%lx\n", (unsigned long)my_fb_info->screen_base);
+	printk("screen_size=%u\n", my_fb_info->screen_size);
+//	my_fb_info->screen_base = vid_buffer;
+//	my_fb_info->screen_size = vid_size;
+//	my_fb_info->fix.line_length = 
+//	my_fb_info->fix.smem_length = 
+
+		
+	printk("buffer0=%x\n", *( (int*)vid_buffer + 0));
+        printk("buffer1=%x\n", *( (int*)vid_buffer + 1));
+	printk("buffer2=%x\n", *( (int*)vid_buffer + 2));
+	printk("buffer10=%x\n", *( (int*)vid_buffer + 10));
+	printk("buffer200=%x\n", *( (int*)vid_buffer + 200));
+	printk("buffer400=%x\n", *( (int*)vid_buffer + 400));
+
+
+
+//	memcpy(frame_buffer, vid_buffer, vid_size);
 
 	ret = __vb2_get_done_vb(q, &vb, pb, nonblocking);
 	if (ret < 0)
@@ -1703,6 +1777,7 @@ int vb2_core_streamon(struct vb2_queue *q, unsigned int type)
 
 	printk("Saeed25: %s\n", __FUNCTION__);
 
+	log_queue(q, __FUNCTION__);
 	if (type != q->type) {
 		dprintk(1, "invalid stream type\n");
 		return -EINVAL;

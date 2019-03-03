@@ -409,11 +409,11 @@ static void ade_rdma_dump_regs(void __iomem *base, u32 ch)
 	DRM_DEBUG_DRIVER("[rdma%d]: reg_ctrl(0x%08x)\n", ch + 1, val);
 	val = readl(base + reg_addr);
 
-	printk("saeed19: base_virt=%lx", (unsigned long)base);
-	printk("base_ph=%lx\n", (unsigned long)virt_to_phys(base));	
+	//printk("saeed19: base_virt=%lx", (unsigned long)base);
+	//printk("base_ph=%lx\n", (unsigned long)virt_to_phys(base));	
 	//printk("base_ph=%lx\n", (unsigned long)virt_to_bus(base));	
 
-	printk("base+reg_addr_ph=%lx\n", (unsigned long)virt_to_phys(base + reg_addr));
+	//printk("base+reg_addr_ph=%lx\n", (unsigned long)virt_to_phys(base + reg_addr));
 	
 //	printk("saeed19: reg_addr=%x", reg_addr);
 //	printk("saeed19: reg_addr val=%x", val);
@@ -649,6 +649,11 @@ static int ade_crtc_init(struct drm_device *dev, struct drm_crtc *crtc,
 int ccc = 0;
 void* argg;
 void* buff;
+extern bool camera_on;
+//extern unsigned int cam_dma_addr;
+
+void __iomem *my_base;
+EXPORT_SYMBOL(my_base);
 static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 			 u32 ch, u32 y, u32 in_h, u32 fmt)
 {
@@ -658,7 +663,7 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	u32 stride = fb->pitches[0];
 	u32 addr = (u32)obj->paddr + y * stride;
 
-	printk("Saeed20: paddr + y*stride %lx\n", (unsigned long)addr);
+	//printk("Saeed20: paddr + y*stride %lx\n", (unsigned long)addr);
 
 	//printk("Saeed1111: %s\n", __FUNCTION__);
 	DRM_DEBUG_DRIVER("rdma%d: (y=%d, height=%d), stride=%d, paddr=0x%x\n",
@@ -682,7 +687,10 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	writel((fmt << 16) & 0x1f0000, base + reg_ctrl);
 	//Saeed
 //	if(ccc<881) {
+	if(!camera_on)
 		writel(addr, base + reg_addr);
+
+	my_base = base;
 //	}
 	writel((in_h << 16) | stride, base + reg_size);
 	writel(stride, base + reg_stride);
@@ -878,7 +886,7 @@ static void ade_update_channel(struct ade_plane *aplane,
 	u32 ch = aplane->ch;
 	u32 in_w;
 	u32 in_h;
-	printk("Saeed10: %s, %d\n", __FUNCTION__, ccc);
+	//printk("Saeed10: %s, %d\n", __FUNCTION__, ccc);
 	ccc++;
 	
 	//printk("Saeed9 Base=%lx: %s\n", (unsigned long)base, __FUNCTION__);
@@ -902,7 +910,7 @@ static void ade_update_channel(struct ade_plane *aplane,
 	/* 5) compositor routing setting */
 	ade_compositor_routing_set(base, ch, crtc_x, crtc_y, in_w, in_h, fmt);
 	
-	printk("Saeed9: %s, end\n", __FUNCTION__);
+	//printk("Saeed9: %s, end\n", __FUNCTION__);
 }
 
 static void ade_disable_channel(struct ade_plane *aplane)
@@ -995,7 +1003,7 @@ static void ade_plane_atomic_update(struct drm_plane *plane,
 				    struct drm_plane_state *old_state)
 {
 	//Saeed
-	int rett;
+	//int rett;
 	struct drm_gem_cma_object *cma_obj;
 	struct drm_framebuffer *fb = plane->state->fb;
 	struct drm_gem_cma_object *obj;
@@ -1010,7 +1018,7 @@ static void ade_plane_atomic_update(struct drm_plane *plane,
 	if(!just_once) {
 		just_once = 1;
 		printk("Saeed10: %s\n", __FUNCTION__);
-		dump_stack();
+		//dump_stack();
 	}
 
 	//Saeed
@@ -1038,7 +1046,7 @@ static void ade_plane_atomic_update(struct drm_plane *plane,
 ////		printk("Saeed19: XEN ret=%d\n", rett);
 //		args->paddr = (unsigned long)(obj->paddr);
 //		rett = HYPERVISOR_freeze_op(args);
-		printk("Saeed19: XEN ret=%d\n", rett);
+//		printk("Saeed19: XEN ret=%d\n", rett);
 	}
 	ade_update_channel(aplane, state->fb, state->crtc_x, state->crtc_y,
 			   state->crtc_w, state->crtc_h,
@@ -1159,6 +1167,8 @@ static int ade_dts_parse(struct platform_device *pdev, struct ade_hw_ctx *ctx)
 
 	return 0;
 }
+struct platform_device *my_pdev;
+EXPORT_SYMBOL(my_pdev);
 
 static int ade_drm_init(struct drm_device *dev)
 {
@@ -1170,6 +1180,9 @@ static int ade_drm_init(struct drm_device *dev)
 	enum drm_plane_type type;
 	int ret;
 	int i;
+
+	//Saeed
+	my_pdev = pdev;
 
 	//printk("Saeed1111: %s\n", __FUNCTION__);
 	ade = devm_kzalloc(dev->dev, sizeof(*ade), GFP_KERNEL);

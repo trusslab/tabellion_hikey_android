@@ -761,6 +761,8 @@ static int uvc_ioctl_dqbuf(struct file *file, void *fh, struct v4l2_buffer *buf)
 	struct uvc_fh *handle = fh;
 	struct uvc_streaming *stream = handle->stream;
 
+	printk("Saeed30: %s\n", __FUNCTION__);
+
 	if (!uvc_has_privileges(handle))
 		return -EBUSY;
 

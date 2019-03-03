@@ -24,6 +24,12 @@
 
 #include <media/v4l2-common.h>
 
+//Saeed
+#include <asm/xen/hypercall.h>
+#include <asm/xen/hypervisor.h>
+#include <linux/platform_device.h>
+
+
 #include "uvcvideo.h"
 
 /* ------------------------------------------------------------------------
@@ -1503,6 +1509,8 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
 	unsigned int npackets, i, j;
 	u16 psize;
 	u32 size;
+	//Saeed
+//	void* argg = kmalloc(4, GFP_KERNEL);
 
 	printk("Saeed29: %s\n", __FUNCTION__);
 	psize = uvc_endpoint_max_bpi(stream->dev->udev, ep);
@@ -1511,7 +1519,9 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
 
 	//Saeed
-	//
+	// Wrong: here dma not complete yet!
+	//HYPERVISOR_camera_op(argg);
+	
 	if (npackets == 0)
 		return -ENOMEM;
 
@@ -1544,7 +1554,7 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
 		printk("Saeed29: transfer_buffer=%lx\n", (unsigned long)urb->transfer_buffer);
 		printk("Saeed29: number_of_packets=%u\n", (unsigned int)urb->number_of_packets);
 		printk("Saeed29: transfer_buffer_length=%u\n", (unsigned int)urb->transfer_buffer_length);
-		printk("Saeed29: interval=%u\n", (unsigned long)urb->interval);
+		printk("Saeed29: interval=%u\n", (unsigned int)urb->interval);
 		printk("Saeed29: npackets=%u\n", (unsigned int)npackets);
 		printk("Saeed29: psize=%u\n", (unsigned int)psize);
 		printk("Saeed29: size=%u\n", (unsigned int)size);
@@ -1617,12 +1627,24 @@ static int uvc_init_video_bulk(struct uvc_streaming *stream,
 /*
  * Initialize isochronous/bulk URBs and allocate transfer buffers.
  */
+//bool camera_on = 0;
+//EXPORT_SYMBOL(camera_on);
+//unsigned int cam_dma_addr;
+//EXPORT_SYMBOL(cam_dma_addr);
+
+//extern void __iomem *my_base;
+//EXPORT_SYMBOL(my_base);
+//struct resource *my_res;
+struct device *my_dev;
+extern struct platform_device *my_pdev;
+
 static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
 {
 	struct usb_interface *intf = stream->intf;
 	struct usb_host_endpoint *ep;
 	unsigned int i;
 	int ret;
+	void* argg = kmalloc(4, GFP_KERNEL);
 
 	printk("Saeed27: %s\n", __FUNCTION__);
 	stream->sequence = -1;
@@ -1708,6 +1730,20 @@ static int uvc_init_video(struct uvc_streaming *stream, gfp_t gfp_flags)
 			return ret;
 		}
 	}
+
+	//Saeed
+	printk("Start Camera op in kernel\n");
+	//cam_dma_addr = stream->urb[0]->transfer_dma;
+	my_dev = &my_pdev->dev;
+//	my_res = platform_get_resource(my_pdev, IORESOURCE_MEM, 0);
+//	my_base = devm_ioremap_resource(my_dev, my_res);
+
+//	camera_on = 1;
+//	writel(stream->urb[0]->transfer_buffer, my_base + 0x1008);
+//	writel(readl(my_base + 0x1008), my_base + 0x1008);
+
+	*(unsigned int*)argg = (unsigned int)stream->urb[0]->transfer_dma; //the dma_addr is 4bytes
+	//HYPERVISOR_camera_op(argg);
 
 	/* The Logitech C920 temporarily forgets that it should not be adjusting
 	 * Exposure Absolute during init so restore controls to stored values.

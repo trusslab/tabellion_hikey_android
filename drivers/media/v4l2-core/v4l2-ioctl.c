@@ -251,6 +251,7 @@ static void v4l_print_format(const void *arg, bool write_only)
 	const struct v4l2_sdr_format *sdr;
 	unsigned i;
 
+	printk("Saeed31: %s\n", __FUNCTION__);
 	pr_cont("type=%s", prt_names(p->type, v4l2_type_names));
 	switch (p->type) {
 	case V4L2_BUF_TYPE_VIDEO_CAPTURE:
@@ -338,7 +339,7 @@ static void v4l_print_format(const void *arg, bool write_only)
 		break;
 	}
 }
-
+//Saeed30
 static void v4l_print_framebuffer(const void *arg, bool write_only)
 {
 	const struct v4l2_framebuffer *p = arg;
@@ -442,6 +443,7 @@ static void v4l_print_buffer(const void *arg, bool write_only)
 	const struct v4l2_plane *plane;
 	int i;
 
+	printk("Saeed31: %s\n", __FUNCTION__);
 	pr_cont("%02ld:%02d:%02d.%08ld index=%d, type=%s, "
 		"flags=0x%08x, field=%s, sequence=%d, memory=%s",
 			p->timestamp.tv_sec / 3600,

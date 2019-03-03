@@ -1448,6 +1448,9 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
 	return vm_iomap_memory(vma, start, len);
 }
 
+struct fb_info* my_fb_info;
+EXPORT_SYMBOL(my_fb_info);
+
 static int
 fb_open(struct inode *inode, struct file *file)
 __acquires(&info->lock)
@@ -1464,6 +1467,8 @@ __releases(&info->lock)
 	printk("Saeed: %s\n", __FUNCTION__);
 
 	info = get_fb_info(fbidx);
+	
+	my_fb_info = info;
 
 	//Saeed
         //addr = 1410334720;
