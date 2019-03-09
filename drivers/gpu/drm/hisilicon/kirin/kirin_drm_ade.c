@@ -1006,7 +1006,7 @@ static void ade_plane_atomic_update(struct drm_plane *plane,
 	//int rett;
 	struct drm_gem_cma_object *cma_obj;
 	struct drm_framebuffer *fb = plane->state->fb;
-	struct drm_gem_cma_object *obj;
+//	struct drm_gem_cma_object *obj;
 	unsigned long src_addr = 0x54100000;
 	//struct hypercall_args *args = (struct hypercall_args*)malloc(sizeof(struct hypercall_args));
 
@@ -1023,31 +1023,31 @@ static void ade_plane_atomic_update(struct drm_plane *plane,
 
 	//Saeed
 	//This freezes correctly in kernel
-	if(ccc==850) {
-//		//p = kmalloc(sizeof (struct drm_framebuffer), GFP_KERNEL);
-		cma_obj = drm_fb_cma_get_gem_obj(fb, 0);
-////		rett = HYPERVISOR_xen_version(0, NULL);
-
-		// Saeed: rdma set function update the reg_addr value later later
-		// I only update the object paddr
-//		writel(addr, base + reg_addr);
-//		reg_addr = RD_CH_ADDR(ch);
-
+//	if(ccc==500) {
+////		//p = kmalloc(sizeof (struct drm_framebuffer), GFP_KERNEL);
+//		cma_obj = drm_fb_cma_get_gem_obj(fb, 0);
+//////		rett = HYPERVISOR_xen_version(0, NULL);
+//
+//		// Saeed: rdma set function update the reg_addr value later later
+//		// I only update the object paddr
+////		writel(addr, base + reg_addr);
+////		reg_addr = RD_CH_ADDR(ch);
+//
+////		
+//		obj = drm_gem_cma_create(gg_dev, 16588800);
+//		printk("Saeed20: paddr=%lx\n", (unsigned long)obj->paddr);
+//		memcpy(phys_to_virt((unsigned long)obj->paddr), phys_to_virt((unsigned long)src_addr), 16588800/2);
+//		memcpy(phys_to_virt((unsigned long)obj->paddr) + 16588800/2, phys_to_virt((unsigned long)src_addr), 16588800/2);
 //		
-		obj = drm_gem_cma_create(gg_dev, 16588800);
-		printk("Saeed20: paddr=%lx\n", (unsigned long)obj->paddr);
-		memcpy(phys_to_virt((unsigned long)obj->paddr), phys_to_virt((unsigned long)src_addr), 16588800/2);
-		memcpy(phys_to_virt((unsigned long)obj->paddr) + 16588800/2, phys_to_virt((unsigned long)src_addr), 16588800/2);
-		
-		//Let's do this in Xen, after the white page
-		//cma_obj->paddr = obj->paddr;
-
-//		rett = HYPERVISOR_freeze_op(NULL);
+//		//Let's do this in Xen, after the white page
+//		//cma_obj->paddr = obj->paddr;
+//
+////		rett = HYPERVISOR_freeze_op(NULL);
+//////		printk("Saeed19: XEN ret=%d\n", rett);
+////		args->paddr = (unsigned long)(obj->paddr);
+////		rett = HYPERVISOR_freeze_op(args);
 ////		printk("Saeed19: XEN ret=%d\n", rett);
-//		args->paddr = (unsigned long)(obj->paddr);
-//		rett = HYPERVISOR_freeze_op(args);
-//		printk("Saeed19: XEN ret=%d\n", rett);
-	}
+//	}
 	ade_update_channel(aplane, state->fb, state->crtc_x, state->crtc_y,
 			   state->crtc_w, state->crtc_h,
 			   state->src_x >> 16, state->src_y >> 16,

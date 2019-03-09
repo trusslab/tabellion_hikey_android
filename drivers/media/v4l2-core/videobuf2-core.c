@@ -29,8 +29,36 @@
 
 #include <trace/events/vb2.h>
 //Saeed
+#include <asm/fb.h>
+#include <linux/fb.h>
+#include <uapi/linux/fb.h>
+/////////////////////////
+#include <linux/module.h>
+
+#include <linux/compat.h>
+#include <linux/types.h>
+#include <linux/errno.h>
+#include <linux/kernel.h>
+#include <linux/major.h>
+#include <linux/slab.h>
+#include <linux/mm.h>
+#include <linux/mman.h>
+#include <linux/vt.h>
+#include <linux/init.h>
+#include <linux/linux_logo.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+#include <linux/console.h>
+#include <linux/kmod.h>
+#include <linux/err.h>
+#include <linux/device.h>
+#include <linux/efi.h>
 #include <linux/fb.h>
 
+#include <asm/fb.h>
+#include <drm/drm_gem_cma_helper.h>
+
+/////////////////////////
 static int debug;
 module_param(debug, int, 0644);
 
@@ -1396,7 +1424,7 @@ int vb2_core_qbuf(struct vb2_queue *q, unsigned int index, void *pb)
 	struct vb2_buffer *vb;
 	int ret;
 
-	log_queue(q, __FUNCTION__);
+	//log_queue(q, __FUNCTION__);
 
 	vb = q->bufs[index];
 
@@ -1476,9 +1504,11 @@ static int __vb2_wait_for_done_vb(struct vb2_queue *q, int nonblocking)
 	 * empty if list_empty() check succeeds.
 	 */
 
+	//printk("Saeed32: %s\n", __FUNCTION__);
 	for (;;) {
 		int ret;
 
+		printk("Saeed32 [1]: %s\n", __FUNCTION__);
 		if (!q->streaming) {
 			dprintk(1, "streaming off, will not wait for buffers\n");
 			return -EINVAL;
@@ -1514,6 +1544,7 @@ static int __vb2_wait_for_done_vb(struct vb2_queue *q, int nonblocking)
 		 */
 		call_void_qop(q, wait_prepare, q);
 
+		printk("Saeed32 [2]: %s\n", __FUNCTION__);
 		/*
 		 * All locks have been released, it is safe to sleep now.
 		 */
@@ -1522,11 +1553,13 @@ static int __vb2_wait_for_done_vb(struct vb2_queue *q, int nonblocking)
 				!list_empty(&q->done_list) || !q->streaming ||
 				q->error);
 
+		printk("Saeed32 [3]: %s\n", __FUNCTION__);
 		/*
 		 * We need to reevaluate both conditions again after reacquiring
 		 * the locks or return an error if one occurred.
 		 */
 		call_void_qop(q, wait_finish, q);
+		printk("Saeed32 [4]: %s\n", __FUNCTION__);
 		if (ret) {
 			dprintk(1, "sleep was interrupted\n");
 			return ret;
@@ -1546,7 +1579,8 @@ static int __vb2_get_done_vb(struct vb2_queue *q, struct vb2_buffer **vb,
 	unsigned long flags;
 	int ret = 0;
 
-	log_queue(q, __FUNCTION__);
+	//log_queue(q, __FUNCTION__);
+	printk("Saeed32[1]: %s\n", __FUNCTION__);
 	/*
 	 * Wait for at least one buffer to become available on the done_list.
 	 */
@@ -1560,6 +1594,7 @@ static int __vb2_get_done_vb(struct vb2_queue *q, struct vb2_buffer **vb,
 	 */
 	spin_lock_irqsave(&q->done_lock, flags);
 	*vb = list_first_entry(&q->done_list, struct vb2_buffer, done_entry);
+	printk("Saeed32[2]: %s\n", __FUNCTION__);
 	/*
 	 * Only remove the buffer from done_list if all planes can be
 	 * handled. Some cases such as V4L2 file I/O and DVB have pb
@@ -1567,6 +1602,7 @@ static int __vb2_get_done_vb(struct vb2_queue *q, struct vb2_buffer **vb,
 	 */
 	if (pb)
 		ret = call_bufop(q, verify_planes_array, *vb, pb);
+	printk("Saeed32[3]: %s\n", __FUNCTION__);
 	if (!ret)
 		list_del(&(*vb)->done_entry);
 	spin_unlock_irqrestore(&q->done_lock, flags);
@@ -1615,53 +1651,261 @@ bool camera_on = 0;
 EXPORT_SYMBOL(camera_on);
 extern void __iomem *my_base;
 extern struct fb_info* my_fb_info;
+extern struct drm_device *gg_dev;
+bool fb2_exists = 0;
 
+//Formula-1
+//void yuv2rgb(int y, int u, int v, char* r, char* g, char* b)
+//{
+//   int r1, g1, b1;
+//   int c = y-16, d = u - 128, e = v - 128;       
+//   r1 = (298 * c           + 409 * e + 128) >> 8;
+//   g1 = (298 * c - 100 * d - 208 * e + 128) >> 8;
+//   b1 = (298 * c + 516 * d           + 128) >> 8;
+//
+//   // Even with proper conversion, some values still need clipping.
+//   if (r1 > 255) r1 = 255;
+//   if (g1 > 255) g1 = 255;
+//   if (b1 > 255) b1 = 255;
+//   if (r1 < 0) r1 = 0;
+//   if (g1 < 0) g1 = 0;
+//   if (b1 < 0) b1 = 0;
+//   *r = r1 ;
+//   *g = g1 ;
+//   *b = b1 ;
+//}
+
+//Formula-2
+void yuv2rgb(int y, int u, int v, char* r, char* g, char* b)
+{
+	const int y2 = (int)y;
+      	const int u2 = (int)u - 128;
+        const int v2 = (int)v - 128;
+
+     	int r1 = y2 + ((v2 * 37221) >> 15);
+	int g1 = y2 - (((u2 * 12975) + (v2 * 18949)) >> 15);
+	int b1 = y2 + ((u2 * 66883) >> 15);
+
+   	if (r1 > 255) r1 = 255;
+	if (g1 > 255) g1 = 255;
+	if (b1 > 255) b1 = 255;
+	if (r1 < 0) r1 = 0;
+	if (g1 < 0) g1 = 0;
+	if (b1 < 0) b1 = 0;
+	
+	*r = r1 ;
+	*g = g1 ;
+	*b = b1 ;
+}
+
+struct drm_gem_cma_object *obj;
+int test=0;
 int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 		   bool nonblocking)
 {
 	struct vb2_buffer *vb = NULL;
 	struct vb2_buffer *my_vb;
 	int ret;
-	unsigned int *frame_buffer;
+//	unsigned int *frame_buffer;
 
 	//Saeed
-	unsigned long curr_fb;
+//	unsigned long curr_fb;
 	void* vid_buffer;
-	int vid_size;
+	void *fb2_addr;
+	unsigned int vid_size;
+	struct fb_var_screeninfo *var;
+	struct fb_fix_screeninfo *fix;
+	int i, j;
+	int width=320, height=240;
+	//struct drm_gem_cma_object *obj;
+	unsigned long src_addr = 0x54100000;
+	
+//	int cb, cr;
+	char transp = 0xff; //transp
+	unsigned char* tmp;
 
+
+	ret = __vb2_get_done_vb(q, &vb, pb, nonblocking);
+
+	printk("Saeed32: %s\n", __FUNCTION__);
+	printk("Saeed32: %u\n", q->num_buffers);
+	/////////////////////////Saeed start////////////////////
+	test=0;
 	log_queue(q, __FUNCTION__);
 	camera_on = 1;
+	
 	my_vb = q->bufs[0];
-	vid_buffer = vb2_plane_vaddr(my_vb, 0);
-	vid_size = vb2_plane_size(q->bufs[0], 0);
+
+	vid_buffer = vb2_plane_vaddr(vb, 0);
+	//vid_buffer = vb2_plane_vaddr(vb, 0);
+	printk("Saeed31:, video_buffer=%lx\n", (unsigned long)vid_buffer);
+	//vid_size = vb2_plane_size(vb, 0);
+	vid_size = vb2_plane_size(vb, 0);
+	printk("Saeed31:, video_size=%u\n", (unsigned long)vid_size);
 
 	//writel(my_vb->planes[0].mem_priv, my_base + 0x1008);
 
-	curr_fb = readl(my_base + 0x1008);
-	frame_buffer = phys_to_virt((unsigned long)curr_fb);
-	printk("Saeed30: curr_fb address=%lx\n", (unsigned long)curr_fb);
+//	curr_fb = readl(my_base + 0x1008);
+	//frame_buffer = phys_to_virt((unsigned long)curr_fb);
+//	printk("Saeed30: curr_fb address=%lx\n", (unsigned long)curr_fb);
 	//memcpy(curr_fb, my_vb->planes[0].mem_priv, my_vb->planes[0].length);
 
+	///////////////////////
+	printk("Saeed31: PRINT FRAMEBUFFER INFORMATION\n");
 	printk("screen_base=%lx\n", (unsigned long)my_fb_info->screen_base);
-	printk("screen_size=%u\n", my_fb_info->screen_size);
+	printk("screen_size=%lx\n", my_fb_info->screen_size);
+
+	var = &my_fb_info->var;
+	fix = &my_fb_info->fix;
+
+	printk("bpl=%u\n", fix->line_length);
+	printk("smem_length=%u\n", fix->smem_len);
+
+	printk("xres=%u\n", var->xres);
+	printk("yres=%u\n", var->yres);
+	printk("var->bits_per_pixel=%u\n", var->bits_per_pixel);
+	printk("var->red=%u\n", var->red);
+	printk("var->green=%u\n", var->green);
+	printk("var->blue=%u\n", var->blue);
+	printk("var->transp=%u\n", var->transp);
+	////////
+	printk("Saeed31: num_planes=%d\n", vb->num_planes);
+	//////////////////////////////////////////////////
+	//Create the second FB
+	//Let's set the display to show the second framebuffer	
+	if(!fb2_exists) {
+		obj = drm_gem_cma_create(gg_dev, 16588800);
+		memcpy(phys_to_virt((unsigned long)(obj->paddr)), phys_to_virt(src_addr), 16588800/2);
+		memcpy(phys_to_virt((unsigned long)(obj->paddr)) + 16588800/2, phys_to_virt(src_addr), 16588800/2);
+		fb2_exists = 1;
+	}
+	//////////////
+
+	//writel(obj->paddr, my_base + 0x1008);
+	fb2_addr = phys_to_virt((unsigned long)obj->paddr);
+	printk("Saeed31: FB2 virt addr=%lx\n", (unsigned long)fb2_addr);
+
+
+	// YUYV to RGB CONVERSION FFF
+	//
+	tmp = (unsigned char*)vid_buffer;
+
+	// Print a bunch of pixel values
+	printk("buffer0=%x\n", *( (int*)fb2_addr + 0));
+        printk("buffer1=%x\n", *( (int*)fb2_addr + 1));
+	printk("buffer2=%x\n", *( (int*)fb2_addr + 2));
+	printk("buffer10=%x\n", *( (int*)fb2_addr + 10));
+	printk("buffer200=%x\n", *( (int*)fb2_addr + 130000));
+	printk("buffer400=%x\n", *( (int*)fb2_addr + 153000));
+
+
+	//clear first
+	for (j=0; j<height; j++) {
+		for(i=0; i<width; i++) {
+	        	writel(0xffffffff, (fb2_addr + 1920*4*j) + 4*i);
+		}
+	}
+	for (j=500; j<800; j++) {
+		for(i=1000; i<1200; i++) {
+	        	writel(0xff0ac8c8, (fb2_addr + 1920*4*j) + 4*i);
+		}
+	}
+
+	printk("Cleared\n");
+	for(j=0; j<height; j++) {
+		//printk("j=%d\n", j);
+		for( i=0; i<width/2; i++) {
+			int y1, u, y2, v;
+			char r1, g1, b1;
+			char r2, g2, b2;
+			unsigned int val;
+			//int cr, cb;
+
+//			y1 = *(tmp + j*320*4 + 4*i);
+//			cb = *(tmp + j*320*4 + 4*i + 1);
+//			y2 = *(tmp + j*320*4 + 4*i + 2);
+//			cr = *(tmp + j*320*4 + 4*i + 3);
+			memcpy(&val, tmp + j*width*2 + 4*i, 4);
+
+		        v  = ((val & 0x000000ff));
+		        //cr  = ((val & 0x000000ff));
+		        y2  = ((val & 0x0000ff00)>>8);
+			u  = ((val & 0x00ff0000)>>16);
+			//cb  = ((val & 0x00ff0000)>>16);
+			y1 = ((val & 0xff000000)>>24);
+
+//			y1 = (255/219)*(y1 - 16);
+//			y2 = (255/219)*(y2 - 16);
+//			u = (127/112)*(cb - 128);
+//			v = (127/112)*(cr - 128);
+
+			//yuv2rgb(y1, u, v, &r1, &g1, &b1);
+			//yuv2rgb(y2, u, v, &r2, &g2, &b2);
+			r1 = y1;
+			r2 = y2;
+			g1 = u;
+			g2 = u;
+			b1 = v;
+			b2 = v;
+	
+			*((unsigned int*)fb2_addr + j*1920 + 2*i) = transp << 24 |
+							r1 << 16 |
+							g1 << 8 |
+							b1 << 0;
+			*((unsigned int*)fb2_addr + j*1920 + 2*i + 1) = transp << 24 |
+							r2 << 16 |
+							g2 << 8 |
+							b2 << 0;
+			test++;
+//			if(test==1000 || test==5000) {
+//				printk("val1=%x\n", val);		
+//				printk("val2=%x\n", *((unsigned int*)(tmp + j*width*2 + 4*i)));
+//				printk("fb1=%x, fb2=%x\n", *((unsigned int*)fb2_addr + j*1920 + 2*i), *((unsigned int*)fb2_addr + j*1920 + 2*i + 1));
+//			}
+//			printk("test=%d\n", test);
+//				printk("r2=%x, g2=%x, b2=%x, r1=%x, g1=%x, b1=%x\n", r2, g2, b2, r1, g1, b1);
+//				printk("fb1=%x, fb2=%x\n", *((unsigned int*)fb2_addr + j*1920 + 2*i), *((unsigned int*)fb2_addr + j*1920 + 2*i + 1));
+//				test++;
+//			}
+		}
+	}
+	memcpy(phys_to_virt((unsigned long)(obj->paddr)) + 16588800/2, phys_to_virt((unsigned long)(obj->paddr)), 16588800/2);
+
+	printk("Conversion ended\n");
+	writel(obj->paddr, my_base + 0x1008);
+
+
+
+//	// show the image on the second FB
+//	for (j=0; j<480; j++) {
+////		for(i=0; i<640; i++) {
+////	        	writel(0xffffffff, (fb2_addr + 1920*4*j) + 4*i);
+////		}
+//		memcpy(fb2_addr, vid_buffer + 640*4*j, 640 * 4);	
+//	}
+
+
 //	my_fb_info->screen_base = vid_buffer;
 //	my_fb_info->screen_size = vid_size;
-//	my_fb_info->fix.line_length = 
-//	my_fb_info->fix.smem_length = 
-
+//	fix->line_length = 640 * 4;
+//	fix->smem_len = 614400;
+//
+//	var->xres = var->xres_virtual = var->width = 640;
+//	var->yres = var->yres_virtual = var->height = 480;
+//
+//	var->bits_per_pixel = 32;
 		
-	printk("buffer0=%x\n", *( (int*)vid_buffer + 0));
-        printk("buffer1=%x\n", *( (int*)vid_buffer + 1));
-	printk("buffer2=%x\n", *( (int*)vid_buffer + 2));
-	printk("buffer10=%x\n", *( (int*)vid_buffer + 10));
-	printk("buffer200=%x\n", *( (int*)vid_buffer + 200));
-	printk("buffer400=%x\n", *( (int*)vid_buffer + 400));
+//	printk("buffer0=%x\n", *( (int*)vid_buffer + 0));
+//        printk("buffer1=%x\n", *( (int*)vid_buffer + 1));
+//	printk("buffer2=%x\n", *( (int*)vid_buffer + 2));
+//	printk("buffer10=%x\n", *( (int*)vid_buffer + 10));
+//	printk("buffer200=%x\n", *( (int*)vid_buffer + 200));
+//	printk("buffer400=%x\n", *( (int*)vid_buffer + 400));
 
 
 
-//	memcpy(frame_buffer, vid_buffer, vid_size);
+//memcpy(frame_buffer, vid_buffer, vid_size);
 
-	ret = __vb2_get_done_vb(q, &vb, pb, nonblocking);
 	if (ret < 0)
 		return ret;
 
@@ -1777,7 +2021,7 @@ int vb2_core_streamon(struct vb2_queue *q, unsigned int type)
 
 	printk("Saeed25: %s\n", __FUNCTION__);
 
-	log_queue(q, __FUNCTION__);
+	//log_queue(q, __FUNCTION__);
 	if (type != q->type) {
 		dprintk(1, "invalid stream type\n");
 		return -EINVAL;

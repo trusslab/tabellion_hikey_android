@@ -596,6 +596,7 @@ static int uvc_ioctl_enum_fmt(struct uvc_streaming *stream,
 	enum v4l2_buf_type type = fmt->type;
 	__u32 index = fmt->index;
 
+	printk("Saeed33: %s\n", __FUNCTION__);
 	if (fmt->type != stream->type || fmt->index >= stream->nformats)
 		return -EINVAL;
 
@@ -618,6 +619,8 @@ static int uvc_ioctl_enum_fmt_vid_cap(struct file *file, void *fh,
 {
 	struct uvc_fh *handle = fh;
 	struct uvc_streaming *stream = handle->stream;
+	
+	printk("Saeed33: %s\n", __FUNCTION__);
 
 	return uvc_ioctl_enum_fmt(stream, fmt);
 }
