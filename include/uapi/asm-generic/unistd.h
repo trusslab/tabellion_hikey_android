@@ -730,9 +730,12 @@ __SYSCALL(__NR_pkey_mprotect, sys_pkey_mprotect)
 __SYSCALL(__NR_pkey_alloc,    sys_pkey_alloc)
 #define __NR_pkey_free 290
 __SYSCALL(__NR_pkey_free,     sys_pkey_free)
+//Saeed, new syscall
+#define __NR_time_synch 291
+__SYSCALL(__NR_time_synch,     sys_time_synch)
 
 #undef __NR_syscalls
-#define __NR_syscalls 291
+#define __NR_syscalls 292
 
 /*
  * All syscalls below here should go away really,

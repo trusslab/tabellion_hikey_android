@@ -725,7 +725,7 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 //		*(int*)buff = 0x12345678;
 //		*(int*)argg = (int)(virt_to_phys(buff));
 //		//*(int*)argg = (int)(virt_to_phys(base));
-//		//writel(base + reg_addr, 0x55100000);
+//		i/writel(base + reg_addr, 0x55100000);
 //		printk("Saeed23: buff val=%lx\n", (unsigned long)readl(buff));
 //		//HYPERVISOR_freeze_op(argg);
 //	}

@@ -1699,7 +1699,7 @@ void yuv2rgb(int y, int u, int v, char* r, char* g, char* b)
 }
 
 struct drm_gem_cma_object *obj;
-int test=0;
+//int test=0;
 int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 		   bool nonblocking)
 {
@@ -1711,12 +1711,25 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 	//Saeed
 //	unsigned long curr_fb;
 	void* vid_buffer;
-	void *fb2_addr;
+	unsigned int *fb2_addr;
 	unsigned int vid_size;
 	struct fb_var_screeninfo *var;
 	struct fb_fix_screeninfo *fix;
-	int i, j;
+	int i, j, ii, jj;
+
 	int width=320, height=240;
+	int t_width=640, t_height=480; //target width and target height
+	unsigned char r, g, b;
+	unsigned int sum_r, sum_g, sum_b;
+	int xoffset, yoffset;
+	
+	unsigned int* scaled;
+	unsigned int* transformed;
+
+	int xres, yres;
+	float xscale;
+	float yscale;
+	bool upscale;
 	//struct drm_gem_cma_object *obj;
 	unsigned long src_addr = 0x54100000;
 	
@@ -1730,7 +1743,7 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 	printk("Saeed32: %s\n", __FUNCTION__);
 	printk("Saeed32: %u\n", q->num_buffers);
 	/////////////////////////Saeed start////////////////////
-	test=0;
+	//test=0;
 	log_queue(q, __FUNCTION__);
 	camera_on = 1;
 	
@@ -1760,6 +1773,9 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 
 	printk("bpl=%u\n", fix->line_length);
 	printk("smem_length=%u\n", fix->smem_len);
+
+	xres = var->xres;
+	yres = var->yres;
 
 	printk("xres=%u\n", var->xres);
 	printk("yres=%u\n", var->yres);
@@ -1799,27 +1815,29 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 	printk("buffer400=%x\n", *( (int*)fb2_addr + 153000));
 
 
-	//clear first
-	for (j=0; j<height; j++) {
-		for(i=0; i<width; i++) {
-	        	writel(0xffffffff, (fb2_addr + 1920*4*j) + 4*i);
-		}
-	}
-	for (j=500; j<800; j++) {
-		for(i=1000; i<1200; i++) {
-	        	writel(0xff0ac8c8, (fb2_addr + 1920*4*j) + 4*i);
-		}
-	}
+//	//clear first
+//	for (j=0; j<height; j++) {
+//		for(i=0; i<width; i++) {
+//	        	writel(0xffffffff, (fb2_addr + 1920*4*j) + 4*i);
+//		}
+//	}
+//	for (j=500; j<800; j++) {
+//		for(i=1000; i<1200; i++) {
+//	        	writel(0xff0ac8c8, (fb2_addr + 1920*4*j) + 4*i);
+//		}
+//	}
 
-	printk("Cleared\n");
+	transformed = (unsigned int*)kmalloc(width * height * 4, GFP_KERNEL);
+//	printk("Cleared\n");
 	for(j=0; j<height; j++) {
 		//printk("j=%d\n", j);
 		for( i=0; i<width/2; i++) {
-			int y1, u, y2, v;
-			char r1, g1, b1;
-			char r2, g2, b2;
+			int y1, y2, u, v;
+			unsigned char r1, g1, b1;
+			unsigned char r2, g2, b2;
+			
 			unsigned int val;
-			//int cr, cb;
+//			int cr, cb;
 
 //			y1 = *(tmp + j*320*4 + 4*i);
 //			cb = *(tmp + j*320*4 + 4*i + 1);
@@ -1841,6 +1859,8 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 
 			//yuv2rgb(y1, u, v, &r1, &g1, &b1);
 			//yuv2rgb(y2, u, v, &r2, &g2, &b2);
+			//
+
 			r1 = y1;
 			r2 = y2;
 			g1 = u;
@@ -1848,15 +1868,19 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 			b1 = v;
 			b2 = v;
 	
-			*((unsigned int*)fb2_addr + j*1920 + 2*i) = transp << 24 |
-							r1 << 16 |
-							g1 << 8 |
-							b1 << 0;
-			*((unsigned int*)fb2_addr + j*1920 + 2*i + 1) = transp << 24 |
-							r2 << 16 |
-							g2 << 8 |
-							b2 << 0;
-			test++;
+//			*((unsigned int*)fb2_addr + j*1920 + 2*i) = transp << 24 |
+//							r1 << 16 |
+//							g1 << 8 |
+//							b1 << 0;
+//			*((unsigned int*)fb2_addr + j*1920 + 2*i + 1) = transp << 24 |
+//							r2 << 16 |
+//							g2 << 8 |
+//							b2 << 0;
+			transformed[ j*width + 2*i + 0] = transp << 24 | r1 << 16 | g1 << 8 | b1;
+			transformed[ j*width + 2*i + 1] = transp << 24 | r2 << 16 | g2 << 8 | b2;
+
+						
+
 //			if(test==1000 || test==5000) {
 //				printk("val1=%x\n", val);		
 //				printk("val2=%x\n", *((unsigned int*)(tmp + j*width*2 + 4*i)));
@@ -1869,7 +1893,88 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 //			}
 		}
 	}
-	memcpy(phys_to_virt((unsigned long)(obj->paddr)) + 16588800/2, phys_to_virt((unsigned long)(obj->paddr)), 16588800/2);
+	//Start upscale downscaling
+	//
+	//transformed -> scaled
+	//width*height -> t_width*t_height
+	//
+	
+	xscale = t_width/width;
+	yscale = t_height/height;
+	scaled = kmalloc(t_width * t_height * 4, GFP_KERNEL); // 4bytes per pixel
+
+	if (xscale>1 && yscale>1) {
+		printk("Upscaling... with xscale=%d, yscale=%d\n", (int)xscale, (int)yscale);
+		upscale = true;
+	}
+	else if (xscale<1 && yscale<1) {
+		printk("Downscaling...\n");
+		upscale = false;
+	}
+	else
+		printk("Not supported");
+
+
+	//Start scaling	
+	if (upscale) { // replication
+		for (j=0; j<t_height; j++) {
+			for(i=0; i<t_width; i++) {
+				ii = i/(int)xscale;
+				jj = j/(int)yscale;
+				scaled[j * t_width + i] = transformed[(jj * width) + ii];
+			}
+//			printk("From: %d, to: %d\n", j * (width/(int)yscale), j * t_width);
+//			printk("From: %d, to: %d\n", j * (width/(int)yscale) + (i-1)/(int)xscale, j * t_width + (i-1));
+//			printk("-----\n");
+		}
+	}
+	else { // Downscaling
+		yscale = (int)(1/yscale);
+		xscale = (int)(1/xscale);
+		for(i=0; i<t_width; i++) {
+			for (j=0; j<t_height; j++) {
+				//average block of them
+				//
+				sum_r = 0;
+				sum_g = 0;
+				sum_b = 0;
+				for(ii=0; ii<xscale; ii++) {
+					for(jj=0; jj<yscale; jj++) {
+						unsigned int val;
+						val = transformed[ ((int)yscale*j + jj) * t_width + ((int)xscale*i + ii)];
+						sum_r += (val & 0x00FF0000) >> 16;
+						sum_g += (val & 0x0000FF00) >> 8;
+						sum_b += (val & 0x000000FF) >> 0;
+					}
+				}
+				r = (sum_r / (xscale * yscale));
+				g = (sum_g / (xscale * yscale));
+				b = (sum_b / (xscale * yscale));
+
+				scaled[j * t_width + i] = (transp << 24) | (r << 16) | (g << 8) | b;
+			}
+		}
+
+	}
+	kfree(transformed);
+
+	//positioning the scaled buffer on the second framebuffer
+	xoffset = xres/4;
+	yoffset = yres/4;
+	printk("---------------------------------\n");
+	//FIXME: maybe try memcpy
+	for (j=0; j<t_height; j++) {
+		for(i=0; i<t_width; i++) {
+			fb2_addr[ xres * (yoffset + j) + (xoffset + i)] = scaled[j * t_width + i];
+		}
+//		printk("From: %d, to: %d\n", j * t_width, xres * (yoffset + j) + (xoffset));
+//		printk("From: %d, to: %d\n", j * t_width + (i-1), xres * (yoffset + j) + (xoffset + (i-1)));
+//		printk("-----\n");
+	}
+
+	kfree(scaled);
+	
+//	memcpy(phys_to_virt((unsigned long)(obj->paddr)) + 16588800/2, phys_to_virt((unsigned long)(obj->paddr)), 16588800/2);
 
 	printk("Conversion ended\n");
 	writel(obj->paddr, my_base + 0x1008);

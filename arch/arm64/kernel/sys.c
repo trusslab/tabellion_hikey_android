@@ -27,6 +27,14 @@
 #include <linux/syscalls.h>
 #include <asm/cpufeature.h>
 
+asmlinkage long sys_time_synch(void)
+//SYSCALL_DEFINE0(time_synch, void)
+{
+	printk("Syscall works\n");
+
+	return 0;
+}
+
 asmlinkage long sys_mmap(unsigned long addr, unsigned long len,
 			 unsigned long prot, unsigned long flags,
 			 unsigned long fd, off_t off)

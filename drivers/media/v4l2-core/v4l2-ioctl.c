@@ -2144,6 +2144,7 @@ static int v4l_g_crop(const struct v4l2_ioctl_ops *ops,
 	};
 	int ret;
 
+	printk("Saeed: %s\n", __FUNCTION__);
 	if (ops->vidioc_g_crop)
 		return ops->vidioc_g_crop(file, fh, p);
 	/* simulate capture crop using selection api */
