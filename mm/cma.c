@@ -368,7 +368,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align)
 	struct page *page = NULL;
 	int ret;
 	
-	printk("Saeed18: %s\n", __FUNCTION__);
+//	printk("Saeed18: %s\n", __FUNCTION__);
 	if (!cma || !cma->count)
 		return NULL;
 

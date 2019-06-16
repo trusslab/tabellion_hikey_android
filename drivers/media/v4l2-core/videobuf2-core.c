@@ -1731,7 +1731,7 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 	float yscale;
 	bool upscale;
 	//struct drm_gem_cma_object *obj;
-	unsigned long src_addr = 0x54100000;
+	unsigned long src_addr = 0x56100000;
 	
 //	int cb, cr;
 	char transp = 0xff; //transp

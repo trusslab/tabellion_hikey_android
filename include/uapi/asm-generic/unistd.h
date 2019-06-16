@@ -734,8 +734,14 @@ __SYSCALL(__NR_pkey_free,     sys_pkey_free)
 #define __NR_time_synch 291
 __SYSCALL(__NR_time_synch,     sys_time_synch)
 
+#define __NR_freeze_ui 292
+__SYSCALL(__NR_freeze_ui,     sys_freeze_ui)
+
+#define __NR_unfreeze_ui 293
+__SYSCALL(__NR_unfreeze_ui,     sys_unfreeze_ui)
+
 #undef __NR_syscalls
-#define __NR_syscalls 292
+#define __NR_syscalls 294
 
 /*
  * All syscalls below here should go away really,

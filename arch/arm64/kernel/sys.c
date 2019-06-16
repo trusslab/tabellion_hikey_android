@@ -27,10 +27,30 @@
 #include <linux/syscalls.h>
 #include <asm/cpufeature.h>
 
+//Saeed new syscall, for time synchronization
+//
 asmlinkage long sys_time_synch(void)
-//SYSCALL_DEFINE0(time_synch, void)
 {
 	printk("Syscall works\n");
+
+	return 0;
+}
+//freezing ui
+extern void freeze_ui(void);
+asmlinkage long sys_freeze_ui(void)
+{
+	printk("Start freeze ui syscall\n");
+	freeze_ui();
+
+	return 0;
+}
+
+//unfreezing ui
+extern void unfreeze_ui(void);
+asmlinkage long sys_unfreeze_ui(void)
+{
+	printk("Start unfreeze ui syscall\n");
+	unfreeze_ui();
 
 	return 0;
 }

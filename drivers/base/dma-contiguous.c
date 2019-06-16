@@ -190,8 +190,8 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
 struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
 				       unsigned int align)
 {
-	printk("Saeed18: %s\n", __FUNCTION__);
-	printk("Saeed18: %s, number of pages, count=%u\n", __FUNCTION__, (unsigned int)count);
+//	printk("Saeed18: %s\n", __FUNCTION__);
+//	printk("Saeed18: %s, number of pages, count=%u\n", __FUNCTION__, (unsigned int)count);
 	if (align > CONFIG_CMA_ALIGNMENT)
 		align = CONFIG_CMA_ALIGNMENT;
 
@@ -250,7 +250,7 @@ static int __init rmem_cma_setup(struct reserved_mem *rmem)
 	struct cma *cma;
 	int err;
 
-	printk("Saeed18: %s\n", __FUNCTION__);
+	//printk("Saeed18: %s\n", __FUNCTION__);
 	if (!of_get_flat_dt_prop(node, "reusable", NULL) ||
 	    of_get_flat_dt_prop(node, "no-map", NULL))
 		return -EINVAL;

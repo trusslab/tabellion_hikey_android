@@ -95,6 +95,7 @@
 //Saeed
 #define __HYPERVISOR_freeze_op            60
 #define __HYPERVISOR_camera_op            61
+#define __HYPERVISOR_unfreeze_op          62
 
 /*
  * VIRTUAL INTERRUPTS

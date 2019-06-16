@@ -24,7 +24,7 @@ static void tee_shm_release(struct tee_shm *shm)
 {
 	struct tee_device *teedev = shm->teedev;
 
-	printk("Saeed: %s\n", __FUNCTION__);
+	//printk("Saeed: %s\n", __FUNCTION__);
 
 	mutex_lock(&teedev->mutex);
 	idr_remove(&teedev->idr, shm->id);
@@ -247,26 +247,33 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
 	int num_pages;
 	unsigned long start;
 
+	//printk("Saeed: %s[1]\n", __FUNCTION__);
+
 	if (flags != req_flags)
 		return ERR_PTR(-ENOTSUPP);
 
+	//printk("Saeed: %s[2]\n", __FUNCTION__);
 	if (!tee_device_get(teedev))
 		return ERR_PTR(-EINVAL);
 
+	//printk("Saeed: %s[3]\n", __FUNCTION__);
 	if (!teedev->desc->ops->shm_register ||
 	    !teedev->desc->ops->shm_unregister) {
 		tee_device_put(teedev);
 		return ERR_PTR(-ENOTSUPP);
 	}
 
+	//printk("Saeed: %s[4]\n", __FUNCTION__);
 	teedev_ctx_get(ctx);
 
+	//printk("Saeed: %s[5]\n", __FUNCTION__);
 	shm = kzalloc(sizeof(*shm), GFP_KERNEL);
 	if (!shm) {
 		ret = ERR_PTR(-ENOMEM);
 		goto err;
 	}
 
+	//printk("Saeed: %s[6]\n", __FUNCTION__);
 	shm->flags = flags | TEE_SHM_REGISTER;
 	shm->teedev = teedev;
 	shm->ctx = ctx;
@@ -275,13 +282,18 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
 	shm->offset = addr - start;
 	shm->size = length;
 	num_pages = (roundup(addr + length, PAGE_SIZE) - start) / PAGE_SIZE;
+
+	//printk("Saeed: %s[6.1], shm->size=%u, num_pages=%u\n", __FUNCTION__, shm->size, num_pages);
+	//printk("Saeed: %s[6.2], start=%lx\n", __FUNCTION__, (unsigned long)start);
 	shm->pages = kcalloc(num_pages, sizeof(*shm->pages), GFP_KERNEL);
-	if (!shm->pages) {
+if (!shm->pages) {
 		ret = ERR_PTR(-ENOMEM);
 		goto err;
 	}
 
+	//printk("Saeed: %s[7]\n", __FUNCTION__);
 	rc = get_user_pages_fast(start, num_pages, 1, shm->pages);
+	//printk("Saeed: %s[7], rc=%u\n", __FUNCTION__, rc);
 	if (rc > 0)
 		shm->num_pages = rc;
 	if (rc != num_pages) {
@@ -291,6 +303,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
 		goto err;
 	}
 
+	//printk("Saeed: %s[8]\n", __FUNCTION__);
 	mutex_lock(&teedev->mutex);
 	shm->id = idr_alloc(&teedev->idr, shm, 1, 0, GFP_KERNEL);
 	mutex_unlock(&teedev->mutex);
@@ -300,6 +313,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
 		goto err;
 	}
 
+	//printk("Saeed: %s[9]\n", __FUNCTION__);
 	rc = teedev->desc->ops->shm_register(ctx, shm, shm->pages,
 					     shm->num_pages, start);
 	if (rc) {
@@ -307,6 +321,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
 		goto err;
 	}
 
+	//printk("Saeed: %s[10]\n", __FUNCTION__);
 	if (flags & TEE_SHM_DMA_BUF) {
 		DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
 
@@ -323,6 +338,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
 		}
 	}
 
+	//printk("Saeed: %s[11]\n", __FUNCTION__);
 	mutex_lock(&teedev->mutex);
 	list_add_tail(&shm->link, &ctx->list_shm);
 	mutex_unlock(&teedev->mutex);
@@ -381,7 +397,7 @@ void tee_shm_free(struct tee_shm *shm)
 	 * In the case of driver private memory we call tee_shm_release
 	 * directly instead as it doesn't have a reference counter.
 	 */
-	printk("Saeed: tee_shm_free \n");
+	//printk("Saeed: tee_shm_free \n");
 	if (shm->flags & TEE_SHM_DMA_BUF)
 		dma_buf_put(shm->dmabuf);
 	else

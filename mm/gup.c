@@ -1557,10 +1557,12 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
 {
 	int nr, ret;
 
+	//printk("Saeed1: %s\n", __FUNCTION__);
 	start &= PAGE_MASK;
 	nr = __get_user_pages_fast(start, nr_pages, write, pages);
 	ret = nr;
 
+	//printk("Saeed2: %s\n", __FUNCTION__);
 	if (nr < nr_pages) {
 		/* Try to get the remaining pages with get_user_pages */
 		start += nr << PAGE_SHIFT;
@@ -1569,6 +1571,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
 		ret = get_user_pages_unlocked(start, nr_pages - nr, pages,
 				write ? FOLL_WRITE : 0);
 
+		//printk("Saeed3: %s\n", __FUNCTION__);
 		/* Have to be a bit careful with return values */
 		if (nr > 0) {
 			if (ret < 0)

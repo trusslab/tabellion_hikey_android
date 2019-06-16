@@ -86,6 +86,7 @@ HYPERCALL2(multicall);
 HYPERCALL2(vm_assist);
 HYPERCALL1(freeze_op);
 HYPERCALL1(camera_op);
+HYPERCALL1(unfreeze_op);
 
 ENTRY(privcmd_call)
 	mov x16, x0

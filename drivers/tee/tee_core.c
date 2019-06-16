@@ -166,26 +166,32 @@ tee_ioctl_shm_register(struct tee_context *ctx,
 	struct tee_ioctl_shm_register_data data;
 	struct tee_shm *shm;
 
+	//printk("Saeed: %s[1]\n", __FUNCTION__);
 	if (copy_from_user(&data, udata, sizeof(data)))
 		return -EFAULT;
 
+	//printk("Saeed: %s[2]\n", __FUNCTION__);
 	/* Currently no input flags are supported */
 	if (data.flags)
 		return -EINVAL;
 
+	//printk("Saeed: %s[3]\n", __FUNCTION__);
 	shm = tee_shm_register(ctx, data.addr, data.length,
 			       TEE_SHM_DMA_BUF | TEE_SHM_USER_MAPPED);
 	if (IS_ERR(shm))
 		return PTR_ERR(shm);
 
+	//printk("Saeed: %s[4]\n", __FUNCTION__);
 	data.id = shm->id;
 	data.flags = shm->flags;
 	data.length = shm->size;
 
+	//printk("Saeed: %s[5]\n", __FUNCTION__);
 	if (copy_to_user(udata, &data, sizeof(data)))
 		ret = -EFAULT;
 	else
 		ret = tee_shm_get_fd(shm);
+	//printk("Saeed: %s[6]\n", __FUNCTION__);
 	/*
 	 * When user space closes the file descriptor the shared memory
 	 * should be freed or if tee_shm_get_fd() failed then it will

@@ -68,7 +68,7 @@ static inline struct cma *dev_get_cma_area(struct device *dev)
 		printk("Saeed18: dev cma area\n", __FUNCTION__);
 		return dev->cma_area;
 	}
-	printk("Saeed18: default area\n", __FUNCTION__);
+	//printk("Saeed18: default area\n", __FUNCTION__);
 	return dma_contiguous_default_area;
 }
 

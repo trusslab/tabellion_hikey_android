@@ -351,10 +351,34 @@ int drm_fb_cma_debugfs_show(struct seq_file *m, void *arg)
 }
 EXPORT_SYMBOL_GPL(drm_fb_cma_debugfs_show);
 #endif
+extern bool allocated;
+extern unsigned long sfb_vaddr, sfb_paddr;
 
+const struct vm_operations_struct mod_mem_ops = {
+
+};
 static int drm_fb_cma_mmap(struct fb_info *info, struct vm_area_struct *vma)
 {
-	return dma_mmap_writecombine(info->device, vma, info->screen_base,
+        size_t size = vma->vm_end - vma->vm_start;
+
+	if(allocated) {
+//		printk("Saeed: %s\n", __FUNCTION__);
+		vma->vm_ops = &mod_mem_ops;
+         	/* Remap-pfn-range will mark the range VM_IO */
+		if (remap_pfn_range(vma, vma->vm_start, (sfb_paddr)>> PAGE_SHIFT, size, vma->vm_page_prot)) {
+			return -EAGAIN;
+		}
+//		info->screen_base = sfb_vaddr;
+//		info->screen_buffer = sfb_vaddr;
+//		info->fix.smem_start = sfb_paddr;
+//		info->fix.smem_len = 16588800/2;
+//		printk("Saeed: smem_start=%lx\n", info->fix.smem_start);
+//		printk("Saeed: screen_base=%u\n", *(int*)(info->screen_base));
+//		printk(KERN_INFO "VMA Open. Virt_addr: %lx, phy_addr: %lx\n",vma->vm_start, vma->vm_pgoff<<PAGE_SHIFT);
+		return 0;
+	}
+	else
+		return dma_mmap_writecombine(info->device, vma, info->screen_base,
 				     info->fix.smem_start, info->fix.smem_len);
 }
 

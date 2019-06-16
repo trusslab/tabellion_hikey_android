@@ -469,10 +469,10 @@ static inline void *dma_alloc_attrs(struct device *dev, size_t size,
 
 //	printk("Saeed17 [4]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	cpu_addr = ops->alloc(dev, size, dma_handle, flag, attrs);
-	printk("Saeed17 [5]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
-	printk("Saeed29 [5]: %s, cpu_addr=%lx\n", __FUNCTION__, (unsigned long)cpu_addr);
+	//printk("Saeed17 [5]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
+	//printk("Saeed29 [5]: %s, cpu_addr=%lx\n", __FUNCTION__, (unsigned long)cpu_addr);
 	debug_dma_alloc_coherent(dev, size, *dma_handle, cpu_addr);
-	printk("Saeed17 [6]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
+	//printk("Saeed17 [6]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	return cpu_addr;
 }
 

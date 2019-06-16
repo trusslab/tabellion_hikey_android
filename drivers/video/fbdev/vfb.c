@@ -369,6 +369,7 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
 static int vfb_mmap(struct fb_info *info,
 		    struct vm_area_struct *vma)
 {
+	printk("Saeed: %s\n", __FUNCTION__);
 	return remap_vmalloc_range(vma, (void *)info->fix.smem_start, vma->vm_pgoff);
 }
 
