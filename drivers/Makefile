@@ -4,6 +4,7 @@
 # 15 Sep 2000, Christoph Hellwig <hch@infradead.org>
 # Rewritten to use lists instead of if-statements.
 #
+obj-$(CONFIG_CAMERA_MOD)	+= camera_mod/
 
 obj-y				+= irqchip/
 obj-y				+= bus/

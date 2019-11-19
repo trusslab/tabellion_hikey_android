@@ -41,8 +41,8 @@ static void *vb2_vmalloc_alloc(struct device *dev, unsigned long attrs,
 {
 	struct vb2_vmalloc_buf *buf;
 
-	printk("Saeed27: %s\n", __FUNCTION__);
-	printk("Saeed27: %lu\n", size);
+//	printk("Saeed27: %s\n", __FUNCTION__);
+//	printk("Saeed27: %lu\n", size);
 
 	saeed_tmp = 1;
 	buf = kzalloc(sizeof(*buf), GFP_KERNEL | gfp_flags);
@@ -138,7 +138,7 @@ static void vb2_vmalloc_put_userptr(void *buf_priv)
 	struct page **pages;
 	unsigned int n_pages;
 
-	printk("Saeed27: %s\n", __FUNCTION__);
+//	printk("Saeed27: %s\n", __FUNCTION__);
 	if (!buf->vec->is_pfns) {
 		n_pages = frame_vector_count(buf->vec);
 		pages = frame_vector_pages(buf->vec);
@@ -158,7 +158,7 @@ static void *vb2_vmalloc_vaddr(void *buf_priv)
 {
 	struct vb2_vmalloc_buf *buf = buf_priv;
 
-	printk("Saeed27: %s\n", __FUNCTION__);
+//	printk("Saeed27: %s\n", __FUNCTION__);
 	if (!buf->vaddr) {
 		pr_err("Address of an unallocated plane requested "
 		       "or cannot map user pointer\n");
@@ -228,7 +228,7 @@ static int vb2_vmalloc_dmabuf_ops_attach(struct dma_buf *dbuf, struct device *de
 	int ret;
 	int i;
 
-	printk("Saeed27: %s\n", __FUNCTION__);
+//	printk("Saeed27: %s\n", __FUNCTION__);
 	attach = kzalloc(sizeof(*attach), GFP_KERNEL);
 	if (!attach)
 		return -ENOMEM;
@@ -424,7 +424,7 @@ static void *vb2_vmalloc_attach_dmabuf(struct device *dev, struct dma_buf *dbuf,
 {
 	struct vb2_vmalloc_buf *buf;
 
-	printk("Saeed27: %s\n", __FUNCTION__);
+//	printk("Saeed27: %s\n", __FUNCTION__);
 	if (dbuf->size < size)
 		return ERR_PTR(-EFAULT);
 

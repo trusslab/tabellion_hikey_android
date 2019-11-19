@@ -54,6 +54,8 @@
 #include <linux/device.h>
 #include <linux/efi.h>
 #include <linux/fb.h>
+#include <asm/xen/hypercall.h>
+#include <asm/xen/hypervisor.h>
 
 #include <asm/fb.h>
 #include <drm/drm_gem_cma_helper.h>
@@ -1342,32 +1344,32 @@ EXPORT_SYMBOL_GPL(vb2_core_prepare_buf);
  * buffers back to vb2 in state QUEUED. Check if that happened and if
  * not warn and reclaim them forcefully.
  */
-void log_queue(struct vb2_queue *q, char* fname)
-{
-	//Saeed
-	struct vb2_buffer *my_vb;
-	unsigned int my_plane;
-	int i;
-
-	printk("Saeed30: %s, number of buffers=%d\n", fname, q->num_buffers);
-	for (i=0; i< q->num_buffers; i++) {
-		printk("Saeed30: %s, bufs[%d]:\n", fname, i);
-		my_vb = q->bufs[i];
-	
-		for (my_plane = 0; my_plane < my_vb->num_planes; ++my_plane) {
-			printk("Saeed30: vb->plane.mem_priv=%lx\n", (unsigned long)(my_vb->planes[my_plane].mem_priv));
-			printk("Saeed30: vb->plane.length=%u\n", (unsigned int)(my_vb->planes[my_plane].length));
-			printk("Saeed30: vb->plane.bytesused=%u\n", (unsigned int)(my_vb->planes[my_plane].bytesused));
-		}
-	}
-}
+//void log_queue(struct vb2_queue *q, char* fname)
+//{
+//	//Saeed
+//	struct vb2_buffer *my_vb;
+//	unsigned int my_plane;
+//	int i;
+//
+////	//printk("Saeed30: %s, number of buffers=%d\n", fname, q->num_buffers);
+//	for (i=0; i< q->num_buffers; i++) {
+////		//printk("Saeed30: %s, bufs[%d]:\n", fname, i);
+//		my_vb = q->bufs[i];
+//	
+//		for (my_plane = 0; my_plane < my_vb->num_planes; ++my_plane) {
+//			//printk("Saeed30: vb->plane.mem_priv=%lx\n", (unsigned long)(my_vb->planes[my_plane].mem_priv));
+//			//printk("Saeed30: vb->plane.length=%u\n", (unsigned int)(my_vb->planes[my_plane].length));
+//			//printk("Saeed30: vb->plane.bytesused=%u\n", (unsigned int)(my_vb->planes[my_plane].bytesused));
+//		}
+//	}
+//}
 static int vb2_start_streaming(struct vb2_queue *q)
 {
 	struct vb2_buffer *vb;
 	int ret;
 
 
-	printk("Saeed30: %s\n", __FUNCTION__);
+//	//printk("Saeed30: %s\n", __FUNCTION__);
 	/*
 	 * If any buffers were queued before streamon,
 	 * we can now pass them to driver for processing.
@@ -1381,7 +1383,7 @@ static int vb2_start_streaming(struct vb2_queue *q)
 		       atomic_read(&q->owned_by_drv_count));
 
 	//Saeed
-	log_queue(q, __FUNCTION__);
+	//log_queue(q, __FUNCTION__);
 
 	if (!ret)
 		return 0;
@@ -1504,11 +1506,11 @@ static int __vb2_wait_for_done_vb(struct vb2_queue *q, int nonblocking)
 	 * empty if list_empty() check succeeds.
 	 */
 
-	//printk("Saeed32: %s\n", __FUNCTION__);
+	////printk("Saeed32: %s\n", __FUNCTION__);
 	for (;;) {
 		int ret;
 
-		printk("Saeed32 [1]: %s\n", __FUNCTION__);
+		////printk("Saeed32 [1]: %s\n", __FUNCTION__);
 		if (!q->streaming) {
 			dprintk(1, "streaming off, will not wait for buffers\n");
 			return -EINVAL;
@@ -1544,7 +1546,7 @@ static int __vb2_wait_for_done_vb(struct vb2_queue *q, int nonblocking)
 		 */
 		call_void_qop(q, wait_prepare, q);
 
-		printk("Saeed32 [2]: %s\n", __FUNCTION__);
+		//printk("Saeed32 [2]: %s\n", __FUNCTION__);
 		/*
 		 * All locks have been released, it is safe to sleep now.
 		 */
@@ -1553,13 +1555,13 @@ static int __vb2_wait_for_done_vb(struct vb2_queue *q, int nonblocking)
 				!list_empty(&q->done_list) || !q->streaming ||
 				q->error);
 
-		printk("Saeed32 [3]: %s\n", __FUNCTION__);
+		//printk("Saeed32 [3]: %s\n", __FUNCTION__);
 		/*
 		 * We need to reevaluate both conditions again after reacquiring
 		 * the locks or return an error if one occurred.
 		 */
 		call_void_qop(q, wait_finish, q);
-		printk("Saeed32 [4]: %s\n", __FUNCTION__);
+		//printk("Saeed32 [4]: %s\n", __FUNCTION__);
 		if (ret) {
 			dprintk(1, "sleep was interrupted\n");
 			return ret;
@@ -1580,7 +1582,7 @@ static int __vb2_get_done_vb(struct vb2_queue *q, struct vb2_buffer **vb,
 	int ret = 0;
 
 	//log_queue(q, __FUNCTION__);
-	printk("Saeed32[1]: %s\n", __FUNCTION__);
+	//printk("Saeed32[1]: %s\n", __FUNCTION__);
 	/*
 	 * Wait for at least one buffer to become available on the done_list.
 	 */
@@ -1594,7 +1596,7 @@ static int __vb2_get_done_vb(struct vb2_queue *q, struct vb2_buffer **vb,
 	 */
 	spin_lock_irqsave(&q->done_lock, flags);
 	*vb = list_first_entry(&q->done_list, struct vb2_buffer, done_entry);
-	printk("Saeed32[2]: %s\n", __FUNCTION__);
+	//printk("Saeed32[2]: %s\n", __FUNCTION__);
 	/*
 	 * Only remove the buffer from done_list if all planes can be
 	 * handled. Some cases such as V4L2 file I/O and DVB have pb
@@ -1602,7 +1604,7 @@ static int __vb2_get_done_vb(struct vb2_queue *q, struct vb2_buffer **vb,
 	 */
 	if (pb)
 		ret = call_bufop(q, verify_planes_array, *vb, pb);
-	printk("Saeed32[3]: %s\n", __FUNCTION__);
+	//printk("Saeed32[3]: %s\n", __FUNCTION__);
 	if (!ret)
 		list_del(&(*vb)->done_entry);
 	spin_unlock_irqrestore(&q->done_lock, flags);
@@ -1699,93 +1701,63 @@ void yuv2rgb(int y, int u, int v, char* r, char* g, char* b)
 }
 
 struct drm_gem_cma_object *obj;
-//int test=0;
+
+
 int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 		   bool nonblocking)
 {
+
+
 	struct vb2_buffer *vb = NULL;
 	struct vb2_buffer *my_vb;
 	int ret;
-//	unsigned int *frame_buffer;
-
-	//Saeed
-//	unsigned long curr_fb;
 	void* vid_buffer;
 	unsigned int *fb2_addr;
 	unsigned int vid_size;
 	struct fb_var_screeninfo *var;
 	struct fb_fix_screeninfo *fix;
-	int i, j, ii, jj;
-
-	int width=320, height=240;
-	int t_width=640, t_height=480; //target width and target height
-	unsigned char r, g, b;
-	unsigned int sum_r, sum_g, sum_b;
-	int xoffset, yoffset;
-	
-	unsigned int* scaled;
-	unsigned int* transformed;
-
+	void* argg;
 	int xres, yres;
-	float xscale;
-	float yscale;
-	bool upscale;
-	//struct drm_gem_cma_object *obj;
 	unsigned long src_addr = 0x56100000;
-	
-//	int cb, cr;
-	char transp = 0xff; //transp
+
 	unsigned char* tmp;
+	void *new_vid_buffer;
 
 
 	ret = __vb2_get_done_vb(q, &vb, pb, nonblocking);
 
-	printk("Saeed32: %s\n", __FUNCTION__);
-	printk("Saeed32: %u\n", q->num_buffers);
-	/////////////////////////Saeed start////////////////////
-	//test=0;
-	log_queue(q, __FUNCTION__);
 	camera_on = 1;
 	
 	my_vb = q->bufs[0];
 
 	vid_buffer = vb2_plane_vaddr(vb, 0);
 	//vid_buffer = vb2_plane_vaddr(vb, 0);
-	printk("Saeed31:, video_buffer=%lx\n", (unsigned long)vid_buffer);
-	//vid_size = vb2_plane_size(vb, 0);
+//	//printk("Saeed31:, video_buffer=%lx\n", (unsigned long)vid_buffer);
 	vid_size = vb2_plane_size(vb, 0);
-	printk("Saeed31:, video_size=%u\n", (unsigned long)vid_size);
+//	//printk("Saeed31:, video_size=%u\n", (unsigned long)vid_size);
 
-	//writel(my_vb->planes[0].mem_priv, my_base + 0x1008);
-
-//	curr_fb = readl(my_base + 0x1008);
-	//frame_buffer = phys_to_virt((unsigned long)curr_fb);
-//	printk("Saeed30: curr_fb address=%lx\n", (unsigned long)curr_fb);
-	//memcpy(curr_fb, my_vb->planes[0].mem_priv, my_vb->planes[0].length);
-
-	///////////////////////
-	printk("Saeed31: PRINT FRAMEBUFFER INFORMATION\n");
-	printk("screen_base=%lx\n", (unsigned long)my_fb_info->screen_base);
-	printk("screen_size=%lx\n", my_fb_info->screen_size);
+//	//printk("Saeed31: PRINT FRAMEBUFFER INFORMATION\n");
+//	printk("screen_base=%lx\n", (unsigned long)my_fb_info->screen_base);
+//	printk("screen_size=%lx\n", my_fb_info->screen_size);
 
 	var = &my_fb_info->var;
 	fix = &my_fb_info->fix;
 
-	printk("bpl=%u\n", fix->line_length);
-	printk("smem_length=%u\n", fix->smem_len);
+//	printk("bpl=%u\n", fix->line_length);
+//	printk("smem_length=%u\n", fix->smem_len);
 
 	xres = var->xres;
 	yres = var->yres;
 
-	printk("xres=%u\n", var->xres);
-	printk("yres=%u\n", var->yres);
-	printk("var->bits_per_pixel=%u\n", var->bits_per_pixel);
-	printk("var->red=%u\n", var->red);
-	printk("var->green=%u\n", var->green);
-	printk("var->blue=%u\n", var->blue);
-	printk("var->transp=%u\n", var->transp);
-	////////
-	printk("Saeed31: num_planes=%d\n", vb->num_planes);
+//	printk("xres=%u\n", var->xres);
+//	printk("yres=%u\n", var->yres);
+//	printk("var->bits_per_pixel=%u\n", var->bits_per_pixel);
+//	printk("var->red=%u\n", var->red);
+//	printk("var->green=%u\n", var->green);
+//	printk("var->blue=%u\n", var->blue);
+//	printk("var->transp=%u\n", var->transp);
+//	////////
+//	//printk("Saeed31: num_planes=%d\n", vb->num_planes);
 	//////////////////////////////////////////////////
 	//Create the second FB
 	//Let's set the display to show the second framebuffer	
@@ -1797,219 +1769,31 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 	}
 	//////////////
 
-	//writel(obj->paddr, my_base + 0x1008);
-	fb2_addr = phys_to_virt((unsigned long)obj->paddr);
-	printk("Saeed31: FB2 virt addr=%lx\n", (unsigned long)fb2_addr);
-
-
-	// YUYV to RGB CONVERSION FFF
-	//
-	tmp = (unsigned char*)vid_buffer;
-
-	// Print a bunch of pixel values
-	printk("buffer0=%x\n", *( (int*)fb2_addr + 0));
-        printk("buffer1=%x\n", *( (int*)fb2_addr + 1));
-	printk("buffer2=%x\n", *( (int*)fb2_addr + 2));
-	printk("buffer10=%x\n", *( (int*)fb2_addr + 10));
-	printk("buffer200=%x\n", *( (int*)fb2_addr + 130000));
-	printk("buffer400=%x\n", *( (int*)fb2_addr + 153000));
-
-
-//	//clear first
-//	for (j=0; j<height; j++) {
-//		for(i=0; i<width; i++) {
-//	        	writel(0xffffffff, (fb2_addr + 1920*4*j) + 4*i);
-//		}
-//	}
-//	for (j=500; j<800; j++) {
-//		for(i=1000; i<1200; i++) {
-//	        	writel(0xff0ac8c8, (fb2_addr + 1920*4*j) + 4*i);
-//		}
-//	}
-
-	transformed = (unsigned int*)kmalloc(width * height * 4, GFP_KERNEL);
-//	printk("Cleared\n");
-	for(j=0; j<height; j++) {
-		//printk("j=%d\n", j);
-		for( i=0; i<width/2; i++) {
-			int y1, y2, u, v;
-			unsigned char r1, g1, b1;
-			unsigned char r2, g2, b2;
-			
-			unsigned int val;
-//			int cr, cb;
-
-//			y1 = *(tmp + j*320*4 + 4*i);
-//			cb = *(tmp + j*320*4 + 4*i + 1);
-//			y2 = *(tmp + j*320*4 + 4*i + 2);
-//			cr = *(tmp + j*320*4 + 4*i + 3);
-			memcpy(&val, tmp + j*width*2 + 4*i, 4);
-
-		        v  = ((val & 0x000000ff));
-		        //cr  = ((val & 0x000000ff));
-		        y2  = ((val & 0x0000ff00)>>8);
-			u  = ((val & 0x00ff0000)>>16);
-			//cb  = ((val & 0x00ff0000)>>16);
-			y1 = ((val & 0xff000000)>>24);
-
-//			y1 = (255/219)*(y1 - 16);
-//			y2 = (255/219)*(y2 - 16);
-//			u = (127/112)*(cb - 128);
-//			v = (127/112)*(cr - 128);
-
-			//yuv2rgb(y1, u, v, &r1, &g1, &b1);
-			//yuv2rgb(y2, u, v, &r2, &g2, &b2);
-			//
-
-			r1 = y1;
-			r2 = y2;
-			g1 = u;
-			g2 = u;
-			b1 = v;
-			b2 = v;
-	
-//			*((unsigned int*)fb2_addr + j*1920 + 2*i) = transp << 24 |
-//							r1 << 16 |
-//							g1 << 8 |
-//							b1 << 0;
-//			*((unsigned int*)fb2_addr + j*1920 + 2*i + 1) = transp << 24 |
-//							r2 << 16 |
-//							g2 << 8 |
-//							b2 << 0;
-			transformed[ j*width + 2*i + 0] = transp << 24 | r1 << 16 | g1 << 8 | b1;
-			transformed[ j*width + 2*i + 1] = transp << 24 | r2 << 16 | g2 << 8 | b2;
-
-						
-
-//			if(test==1000 || test==5000) {
-//				printk("val1=%x\n", val);		
-//				printk("val2=%x\n", *((unsigned int*)(tmp + j*width*2 + 4*i)));
-//				printk("fb1=%x, fb2=%x\n", *((unsigned int*)fb2_addr + j*1920 + 2*i), *((unsigned int*)fb2_addr + j*1920 + 2*i + 1));
-//			}
-//			printk("test=%d\n", test);
-//				printk("r2=%x, g2=%x, b2=%x, r1=%x, g1=%x, b1=%x\n", r2, g2, b2, r1, g1, b1);
-//				printk("fb1=%x, fb2=%x\n", *((unsigned int*)fb2_addr + j*1920 + 2*i), *((unsigned int*)fb2_addr + j*1920 + 2*i + 1));
-//				test++;
-//			}
-		}
-	}
-	//Start upscale downscaling
-	//
-	//transformed -> scaled
-	//width*height -> t_width*t_height
-	//
-	
-	xscale = t_width/width;
-	yscale = t_height/height;
-	scaled = kmalloc(t_width * t_height * 4, GFP_KERNEL); // 4bytes per pixel
-
-	if (xscale>1 && yscale>1) {
-		printk("Upscaling... with xscale=%d, yscale=%d\n", (int)xscale, (int)yscale);
-		upscale = true;
-	}
-	else if (xscale<1 && yscale<1) {
-		printk("Downscaling...\n");
-		upscale = false;
-	}
-	else
-		printk("Not supported");
-
-
-	//Start scaling	
-	if (upscale) { // replication
-		for (j=0; j<t_height; j++) {
-			for(i=0; i<t_width; i++) {
-				ii = i/(int)xscale;
-				jj = j/(int)yscale;
-				scaled[j * t_width + i] = transformed[(jj * width) + ii];
-			}
-//			printk("From: %d, to: %d\n", j * (width/(int)yscale), j * t_width);
-//			printk("From: %d, to: %d\n", j * (width/(int)yscale) + (i-1)/(int)xscale, j * t_width + (i-1));
-//			printk("-----\n");
-		}
-	}
-	else { // Downscaling
-		yscale = (int)(1/yscale);
-		xscale = (int)(1/xscale);
-		for(i=0; i<t_width; i++) {
-			for (j=0; j<t_height; j++) {
-				//average block of them
-				//
-				sum_r = 0;
-				sum_g = 0;
-				sum_b = 0;
-				for(ii=0; ii<xscale; ii++) {
-					for(jj=0; jj<yscale; jj++) {
-						unsigned int val;
-						val = transformed[ ((int)yscale*j + jj) * t_width + ((int)xscale*i + ii)];
-						sum_r += (val & 0x00FF0000) >> 16;
-						sum_g += (val & 0x0000FF00) >> 8;
-						sum_b += (val & 0x000000FF) >> 0;
-					}
-				}
-				r = (sum_r / (xscale * yscale));
-				g = (sum_g / (xscale * yscale));
-				b = (sum_b / (xscale * yscale));
-
-				scaled[j * t_width + i] = (transp << 24) | (r << 16) | (g << 8) | b;
-			}
-		}
-
-	}
-	kfree(transformed);
-
-	//positioning the scaled buffer on the second framebuffer
-	xoffset = xres/4;
-	yoffset = yres/4;
-	printk("---------------------------------\n");
-	//FIXME: maybe try memcpy
-	for (j=0; j<t_height; j++) {
-		for(i=0; i<t_width; i++) {
-			fb2_addr[ xres * (yoffset + j) + (xoffset + i)] = scaled[j * t_width + i];
-		}
-//		printk("From: %d, to: %d\n", j * t_width, xres * (yoffset + j) + (xoffset));
-//		printk("From: %d, to: %d\n", j * t_width + (i-1), xres * (yoffset + j) + (xoffset + (i-1)));
-//		printk("-----\n");
-	}
-
-	kfree(scaled);
-	
-//	memcpy(phys_to_virt((unsigned long)(obj->paddr)) + 16588800/2, phys_to_virt((unsigned long)(obj->paddr)), 16588800/2);
-
-	printk("Conversion ended\n");
 	writel(obj->paddr, my_base + 0x1008);
 
+	tmp = (unsigned char*)vid_buffer;
+	writel(obj->paddr, my_base + 0x1008);
 
+	//printk("Saeed: %s, prepare_photo_op\n", __FUNCTION__);
+	argg = kmalloc(4, GFP_KERNEL);
 
-//	// show the image on the second FB
-//	for (j=0; j<480; j++) {
-////		for(i=0; i<640; i++) {
-////	        	writel(0xffffffff, (fb2_addr + 1920*4*j) + 4*i);
-////		}
-//		memcpy(fb2_addr, vid_buffer + 640*4*j, 640 * 4);	
-//	}
+	new_vid_buffer = kmalloc(vid_size, GFP_KERNEL);
+	*(int*)argg = (int)(virt_to_phys(new_vid_buffer));
+	memcpy(new_vid_buffer, vid_buffer, vid_size);
 
-
-//	my_fb_info->screen_base = vid_buffer;
-//	my_fb_info->screen_size = vid_size;
-//	fix->line_length = 640 * 4;
-//	fix->smem_len = 614400;
+//	*(int*)argg = (int)(virt_to_phys(vid_buffer));
+//	//printk("Saeed: %s, prepare_photo_op, argg=%x\n", __FUNCTION__, *(int*)argg);
 //
-//	var->xres = var->xres_virtual = var->width = 640;
-//	var->yres = var->yres_virtual = var->height = 480;
-//
-//	var->bits_per_pixel = 32;
-		
-//	printk("buffer0=%x\n", *( (int*)vid_buffer + 0));
-//        printk("buffer1=%x\n", *( (int*)vid_buffer + 1));
-//	printk("buffer2=%x\n", *( (int*)vid_buffer + 2));
-//	printk("buffer10=%x\n", *( (int*)vid_buffer + 10));
-//	printk("buffer200=%x\n", *( (int*)vid_buffer + 200));
-//	printk("buffer400=%x\n", *( (int*)vid_buffer + 400));
-
-
-
-//memcpy(frame_buffer, vid_buffer, vid_size);
+//	//printk("Saeed: %s, prepare_photo_op, [0]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 0));
+//	//printk("Saeed: %s, prepare_photo_op, [10]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 10));
+//	//printk("Saeed: %s, prepare_photo_op, [20]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 20));
+//	//printk("Saeed: %s, prepare_photo_op, [50]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 50));
+	
+	HYPERVISOR_prepare_photo_op(argg);
+	
+//	//printk("Saeed: %s, show_photo_op\n", __FUNCTION__);
+	argg = NULL;
+	HYPERVISOR_show_photo_op(argg);
 
 	if (ret < 0)
 		return ret;
@@ -2124,7 +1908,7 @@ int vb2_core_streamon(struct vb2_queue *q, unsigned int type)
 {
 	int ret;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 
 	//log_queue(q, __FUNCTION__);
 	if (type != q->type) {

@@ -194,7 +194,7 @@ static struct uvc_format_desc *uvc_format_by_guid(const __u8 guid[16])
 	unsigned int len = ARRAY_SIZE(uvc_fmts);
 	unsigned int i;
 
-	printk("Saeed33: %s, guid=%u\n", __FUNCTION__, guid);
+	//printk("Saeed33: %s, guid=%u\n", __FUNCTION__, guid);
 
 	for (i = 0; i < len; ++i) {
 		if (memcmp(guid, uvc_fmts[i].guid, 16) == 0)
@@ -624,7 +624,7 @@ static int uvc_parse_streaming(struct uvc_device *dev,
 	int ret = -EINVAL;
 
 	
-	printk("Saeed33: %s \n", __FUNCTION__);
+	//printk("Saeed33: %s \n", __FUNCTION__);
 
 	if (intf->cur_altsetting->desc.bInterfaceSubClass
 		!= UVC_SC_VIDEOSTREAMING) {
@@ -988,7 +988,7 @@ static int uvc_parse_standard_control(struct uvc_device *dev,
 	unsigned int i, n, p, len;
 	__u16 type;
 
-	printk("Saeed33: %s \n", __FUNCTION__);
+	//printk("Saeed33: %s \n", __FUNCTION__);
 	switch (buffer[2]) {
 	case UVC_VC_HEADER:
 		n = buflen >= 12 ? buffer[11] : 0;
@@ -1244,7 +1244,7 @@ static int uvc_parse_control(struct uvc_device *dev)
 	 * zero.
 	 */
 
-	printk("Saeed33: %s \n", __FUNCTION__);
+	//printk("Saeed33: %s \n", __FUNCTION__);
 	while (buflen > 2) {
 		if (uvc_parse_vendor_control(dev, buffer, buflen) ||
 		    buffer[1] != USB_DT_CS_INTERFACE)

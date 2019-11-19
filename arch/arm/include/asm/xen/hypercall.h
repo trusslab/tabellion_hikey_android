@@ -57,8 +57,9 @@ int HYPERVISOR_platform_op_raw(void *arg);
 
 //Saeed
 int HYPERVISOR_freeze_op(void *arg);
-int HYPERVISOR_camera_op(void *arg);
+int HYPERVISOR_prepare_photo_op(void *arg);
 int HYPERVISOR_unfreeze_op(void *arg);
+int HYPERVISOR_show_photo_op(void *arg);
 
 static inline int HYPERVISOR_platform_op(struct xen_platform_op *op)
 {

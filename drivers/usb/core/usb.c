@@ -748,7 +748,7 @@ EXPORT_SYMBOL_GPL(__usb_get_extra_descriptor);
 void *usb_alloc_coherent(struct usb_device *dev, size_t size, gfp_t mem_flags,
 			 dma_addr_t *dma)
 {
-	printk("Saeed28: %s\n", __FUNCTION__);
+	//printk("Saeed28: %s\n", __FUNCTION__);
 	if (!dev || !dev->bus)
 		return NULL;
 	return hcd_buffer_alloc(dev->bus, size, mem_flags, dma);

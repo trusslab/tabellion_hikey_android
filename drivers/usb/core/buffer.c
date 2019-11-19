@@ -122,7 +122,7 @@ void *hcd_buffer_alloc(
 	struct usb_hcd		*hcd = bus_to_hcd(bus);
 	int			i;
 
-	printk("Saeed28: %s\n", __FUNCTION__);
+	//printk("Saeed28: %s\n", __FUNCTION__);
 	if (size == 0)
 		return NULL;
 

@@ -114,7 +114,7 @@ static __u32 uvc_try_frame_interval(struct uvc_frame *frame, __u32 interval)
 {
 	unsigned int i;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 	if (frame->bFrameIntervalType) {
 		__u32 best = -1, dist;
 
@@ -170,7 +170,7 @@ static int uvc_v4l2_try_format(struct uvc_streaming *stream,
 	__u32 interval;
 	int ret = 0;
 	__u8 *fcc;
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 
 	if (fmt->type != stream->type)
 		return -EINVAL;
@@ -282,7 +282,7 @@ static int uvc_v4l2_get_format(struct uvc_streaming *stream,
 	struct uvc_format *format;
 	struct uvc_frame *frame;
 	int ret = 0;
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 
 	if (fmt->type != stream->type)
 		return -EINVAL;
@@ -318,7 +318,7 @@ static int uvc_v4l2_set_format(struct uvc_streaming *stream,
 	struct uvc_frame *frame;
 	int ret;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 	if (fmt->type != stream->type)
 		return -EINVAL;
 
@@ -347,7 +347,7 @@ static int uvc_v4l2_get_streamparm(struct uvc_streaming *stream,
 {
 	uint32_t numerator, denominator;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 	if (parm->type != stream->type)
 		return -EINVAL;
 
@@ -386,7 +386,7 @@ static int uvc_v4l2_set_streamparm(struct uvc_streaming *stream,
 	uint32_t interval;
 	int ret;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 	if (parm->type != stream->type)
 		return -EINVAL;
 
@@ -501,7 +501,7 @@ static int uvc_v4l2_open(struct file *file)
 	struct uvc_fh *handle;
 	int ret = 0;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 	uvc_trace(UVC_TRACE_CALLS, "uvc_v4l2_open\n");
 	stream = video_drvdata(file);
 
@@ -575,7 +575,7 @@ static int uvc_ioctl_querycap(struct file *file, void *fh,
 	struct uvc_video_chain *chain = handle->chain;
 	struct uvc_streaming *stream = handle->stream;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 	strlcpy(cap->driver, "uvcvideo", sizeof(cap->driver));
 	strlcpy(cap->card, vdev->name, sizeof(cap->card));
 	usb_make_path(stream->dev->udev, cap->bus_info, sizeof(cap->bus_info));
@@ -596,7 +596,7 @@ static int uvc_ioctl_enum_fmt(struct uvc_streaming *stream,
 	enum v4l2_buf_type type = fmt->type;
 	__u32 index = fmt->index;
 
-	printk("Saeed33: %s\n", __FUNCTION__);
+	//printk("Saeed33: %s\n", __FUNCTION__);
 	if (fmt->type != stream->type || fmt->index >= stream->nformats)
 		return -EINVAL;
 
@@ -620,7 +620,7 @@ static int uvc_ioctl_enum_fmt_vid_cap(struct file *file, void *fh,
 	struct uvc_fh *handle = fh;
 	struct uvc_streaming *stream = handle->stream;
 	
-	printk("Saeed33: %s\n", __FUNCTION__);
+	//printk("Saeed33: %s\n", __FUNCTION__);
 
 	return uvc_ioctl_enum_fmt(stream, fmt);
 }
@@ -707,7 +707,7 @@ static int uvc_ioctl_reqbufs(struct file *file, void *fh,
 	struct uvc_streaming *stream = handle->stream;
 	int ret;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 	ret = uvc_acquire_privileges(handle);
 	if (ret < 0)
 		return ret;
@@ -764,7 +764,7 @@ static int uvc_ioctl_dqbuf(struct file *file, void *fh, struct v4l2_buffer *buf)
 	struct uvc_fh *handle = fh;
 	struct uvc_streaming *stream = handle->stream;
 
-	printk("Saeed30: %s\n", __FUNCTION__);
+	////printk("Saeed30: %s\n", __FUNCTION__);
 
 	if (!uvc_has_privileges(handle))
 		return -EBUSY;
@@ -794,7 +794,7 @@ static int uvc_ioctl_streamon(struct file *file, void *fh,
 	struct uvc_streaming *stream = handle->stream;
 	int ret;
 
-	printk("Saeed25: %s\n", __FUNCTION__);
+	//printk("Saeed25: %s\n", __FUNCTION__);
 
 	if (!uvc_has_privileges(handle))
 		return -EBUSY;

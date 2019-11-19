@@ -169,7 +169,7 @@ int dma_alloc_from_coherent(struct device *dev, ssize_t size,
 	int dma_memory_map;
 
 	if(saeed_tmp) {
-		dump_stack();
+		//dump_stack();
 		saeed_tmp = 0;
 	}
 	//printk("Saeed17 [1.1]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);

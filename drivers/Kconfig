@@ -210,4 +210,6 @@ source "drivers/fpga/Kconfig"
 
 source "drivers/tee/Kconfig"
 
+source "drivers/camera_mod/Kconfig"
+
 endmenu

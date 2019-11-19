@@ -690,8 +690,8 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	writel((fmt << 16) & 0x1f0000, base + reg_ctrl);
 	//Saeed
 //	if(ccc<881) {
-	//if(!camera_on)
-	if(!freeze_on)
+	if(!camera_on)
+	//if(!freeze_on)
 		writel(addr, base + reg_addr);
 
 	my_base = base;
