@@ -689,9 +689,7 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	 */
 	writel((fmt << 16) & 0x1f0000, base + reg_ctrl);
 	//Saeed
-//	if(ccc<881) {
-	if(!camera_on)
-	//if(!freeze_on)
+	if(!camera_on && !freeze_on)
 		writel(addr, base + reg_addr);
 
 	my_base = base;
@@ -702,41 +700,6 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	writel(stride, base + reg_stride);
 	writel(in_h * stride, base + reg_space);
 	writel(ADE_ENABLE, base + reg_en);
-//	if(ccc==855) {
-////		printk("Saeed: start freezein kernel [1]\n");
-////		printk("Saeed: start freezein kernel [2]\n");
-//		buff = kmalloc(4, GFP_KERNEL);
-////		argg = kmalloc(4, GFP_KERNEL);
-////		//printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff) >> PAGE_SHIFT));
-//		printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff)));
-////		printk("Saeed21: virt=%lx\n", (unsigned long)(buff));
-////		
-////		printk("Saeed: start freezein kernel [3]\n");
-////		//*(int*)argg = (int)(virt_to_phys(buff) >> PAGE_SHIFT);
-////		*(int*)argg = (int)(virt_to_phys(buff));
-//		*(int*)buff = 0x12345678;
-////		HYPERVISOR_freeze_op(argg);
-//	}
-//	if(ccc==880){
-//		printk("Saeed: start freezein kernel [1]\n");
-//		argg = kmalloc(4, GFP_KERNEL);
-////		//printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff) >> PAGE_SHIFT));
-//		printk("Saeed22: base virt=%lx\n", (unsigned long)(base));
-//
-//		//This doesn't make sense for ioremapped memory
-//		//printk("Saeed22: base phys=%lx\n", (unsigned long)(virt_to_phys(base)));
-//
-//		printk("reg val=%lx, reg_addr=%x\n", readl(base + reg_addr), reg_addr);
-//
-//		*(int*)buff = 0x12345678;
-//		*(int*)argg = (int)(virt_to_phys(buff));
-//		//*(int*)argg = (int)(virt_to_phys(base));
-//		i/writel(base + reg_addr, 0x55100000);
-//		printk("Saeed23: buff val=%lx\n", (unsigned long)readl(buff));
-//		//HYPERVISOR_freeze_op(argg);
-//	}
-//	if(ccc>881)
-//		HYPERVISOR_freeze_op(argg);
 
 	ade_update_reload_bit(base, RDMA_OFST + ch, 0);
 }
