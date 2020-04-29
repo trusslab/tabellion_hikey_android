@@ -32,7 +32,6 @@
 #include <asm/fb.h>
 #include <linux/fb.h>
 #include <uapi/linux/fb.h>
-/////////////////////////
 #include <linux/module.h>
 
 #include <linux/compat.h>
@@ -60,7 +59,6 @@
 #include <asm/fb.h>
 #include <drm/drm_gem_cma_helper.h>
 
-/////////////////////////
 static int debug;
 module_param(debug, int, 0644);
 
@@ -232,6 +230,7 @@ static int __vb2_buf_mem_alloc(struct vb2_buffer *vb)
 	int plane;
 	int ret = -ENOMEM;
 
+	printk("%s\n", __FUNCTION__);
 	/*
 	 * Allocate memory for all planes in this buffer
 	 * NOTE: mmapped areas should be page aligned
@@ -1344,25 +1343,6 @@ EXPORT_SYMBOL_GPL(vb2_core_prepare_buf);
  * buffers back to vb2 in state QUEUED. Check if that happened and if
  * not warn and reclaim them forcefully.
  */
-//void log_queue(struct vb2_queue *q, char* fname)
-//{
-//	//Saeed
-//	struct vb2_buffer *my_vb;
-//	unsigned int my_plane;
-//	int i;
-//
-////	//printk("Saeed30: %s, number of buffers=%d\n", fname, q->num_buffers);
-//	for (i=0; i< q->num_buffers; i++) {
-////		//printk("Saeed30: %s, bufs[%d]:\n", fname, i);
-//		my_vb = q->bufs[i];
-//	
-//		for (my_plane = 0; my_plane < my_vb->num_planes; ++my_plane) {
-//			//printk("Saeed30: vb->plane.mem_priv=%lx\n", (unsigned long)(my_vb->planes[my_plane].mem_priv));
-//			//printk("Saeed30: vb->plane.length=%u\n", (unsigned int)(my_vb->planes[my_plane].length));
-//			//printk("Saeed30: vb->plane.bytesused=%u\n", (unsigned int)(my_vb->planes[my_plane].bytesused));
-//		}
-//	}
-//}
 static int vb2_start_streaming(struct vb2_queue *q)
 {
 	struct vb2_buffer *vb;
@@ -1381,9 +1361,6 @@ static int vb2_start_streaming(struct vb2_queue *q)
 	q->start_streaming_called = 1;
 	ret = call_qop(q, start_streaming, q,
 		       atomic_read(&q->owned_by_drv_count));
-
-	//Saeed
-	//log_queue(q, __FUNCTION__);
 
 	if (!ret)
 		return 0;
@@ -1425,8 +1402,6 @@ int vb2_core_qbuf(struct vb2_queue *q, unsigned int index, void *pb)
 {
 	struct vb2_buffer *vb;
 	int ret;
-
-	//log_queue(q, __FUNCTION__);
 
 	vb = q->bufs[index];
 
@@ -1651,57 +1626,7 @@ static void __vb2_dqbuf(struct vb2_buffer *vb)
 
 bool camera_on = 0;
 EXPORT_SYMBOL(camera_on);
-extern void __iomem *my_base;
-extern struct fb_info* my_fb_info;
-extern struct drm_device *gg_dev;
-bool fb2_exists = 0;
-
-//Formula-1
-//void yuv2rgb(int y, int u, int v, char* r, char* g, char* b)
-//{
-//   int r1, g1, b1;
-//   int c = y-16, d = u - 128, e = v - 128;       
-//   r1 = (298 * c           + 409 * e + 128) >> 8;
-//   g1 = (298 * c - 100 * d - 208 * e + 128) >> 8;
-//   b1 = (298 * c + 516 * d           + 128) >> 8;
-//
-//   // Even with proper conversion, some values still need clipping.
-//   if (r1 > 255) r1 = 255;
-//   if (g1 > 255) g1 = 255;
-//   if (b1 > 255) b1 = 255;
-//   if (r1 < 0) r1 = 0;
-//   if (g1 < 0) g1 = 0;
-//   if (b1 < 0) b1 = 0;
-//   *r = r1 ;
-//   *g = g1 ;
-//   *b = b1 ;
-//}
-
-//Formula-2
-void yuv2rgb(int y, int u, int v, char* r, char* g, char* b)
-{
-	const int y2 = (int)y;
-      	const int u2 = (int)u - 128;
-        const int v2 = (int)v - 128;
-
-     	int r1 = y2 + ((v2 * 37221) >> 15);
-	int g1 = y2 - (((u2 * 12975) + (v2 * 18949)) >> 15);
-	int b1 = y2 + ((u2 * 66883) >> 15);
-
-   	if (r1 > 255) r1 = 255;
-	if (g1 > 255) g1 = 255;
-	if (b1 > 255) b1 = 255;
-	if (r1 < 0) r1 = 0;
-	if (g1 < 0) g1 = 0;
-	if (b1 < 0) b1 = 0;
-	
-	*r = r1 ;
-	*g = g1 ;
-	*b = b1 ;
-}
-
-struct drm_gem_cma_object *obj;
-
+void *vid_buffer;
 
 int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 		   bool nonblocking)
@@ -1709,91 +1634,14 @@ int vb2_core_dqbuf(struct vb2_queue *q, unsigned int *pindex, void *pb,
 
 
 	struct vb2_buffer *vb = NULL;
-	struct vb2_buffer *my_vb;
 	int ret;
-	void* vid_buffer;
-	unsigned int *fb2_addr;
-	unsigned int vid_size;
-	struct fb_var_screeninfo *var;
-	struct fb_fix_screeninfo *fix;
-	void* argg;
-	int xres, yres;
-	unsigned long src_addr = 0x56100000;
 
-	unsigned char* tmp;
-	void *new_vid_buffer;
-
+	/* show photo buffer after DMA capture */
+	HYPERVISOR_show_photo_op(NULL);
+	camera_on = 0;
+	/**/
 
 	ret = __vb2_get_done_vb(q, &vb, pb, nonblocking);
-
-	camera_on = 1;
-	
-	my_vb = q->bufs[0];
-
-	vid_buffer = vb2_plane_vaddr(vb, 0);
-	//vid_buffer = vb2_plane_vaddr(vb, 0);
-//	//printk("Saeed31:, video_buffer=%lx\n", (unsigned long)vid_buffer);
-	vid_size = vb2_plane_size(vb, 0);
-//	//printk("Saeed31:, video_size=%u\n", (unsigned long)vid_size);
-
-//	//printk("Saeed31: PRINT FRAMEBUFFER INFORMATION\n");
-//	printk("screen_base=%lx\n", (unsigned long)my_fb_info->screen_base);
-//	printk("screen_size=%lx\n", my_fb_info->screen_size);
-
-	var = &my_fb_info->var;
-	fix = &my_fb_info->fix;
-
-//	printk("bpl=%u\n", fix->line_length);
-//	printk("smem_length=%u\n", fix->smem_len);
-
-	xres = var->xres;
-	yres = var->yres;
-
-//	printk("xres=%u\n", var->xres);
-//	printk("yres=%u\n", var->yres);
-//	printk("var->bits_per_pixel=%u\n", var->bits_per_pixel);
-//	printk("var->red=%u\n", var->red);
-//	printk("var->green=%u\n", var->green);
-//	printk("var->blue=%u\n", var->blue);
-//	printk("var->transp=%u\n", var->transp);
-//	////////
-//	//printk("Saeed31: num_planes=%d\n", vb->num_planes);
-	//////////////////////////////////////////////////
-	//Create the second FB
-	//Let's set the display to show the second framebuffer	
-	if(!fb2_exists) {
-		obj = drm_gem_cma_create(gg_dev, 16588800);
-		memcpy(phys_to_virt((unsigned long)(obj->paddr)), phys_to_virt(src_addr), 16588800/2);
-		memcpy(phys_to_virt((unsigned long)(obj->paddr)) + 16588800/2, phys_to_virt(src_addr), 16588800/2);
-		fb2_exists = 1;
-	}
-	//////////////
-
-	writel(obj->paddr, my_base + 0x1008);
-
-	tmp = (unsigned char*)vid_buffer;
-	writel(obj->paddr, my_base + 0x1008);
-
-	//printk("Saeed: %s, prepare_photo_op\n", __FUNCTION__);
-	argg = kmalloc(4, GFP_KERNEL);
-
-	new_vid_buffer = kmalloc(vid_size, GFP_KERNEL);
-	*(int*)argg = (int)(virt_to_phys(new_vid_buffer));
-	memcpy(new_vid_buffer, vid_buffer, vid_size);
-
-//	*(int*)argg = (int)(virt_to_phys(vid_buffer));
-//	//printk("Saeed: %s, prepare_photo_op, argg=%x\n", __FUNCTION__, *(int*)argg);
-//
-//	//printk("Saeed: %s, prepare_photo_op, [0]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 0));
-//	//printk("Saeed: %s, prepare_photo_op, [10]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 10));
-//	//printk("Saeed: %s, prepare_photo_op, [20]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 20));
-//	//printk("Saeed: %s, prepare_photo_op, [50]=%x\n", __FUNCTION__, *((unsigned int*)new_vid_buffer + 50));
-	
-	HYPERVISOR_prepare_photo_op(argg);
-	
-//	//printk("Saeed: %s, show_photo_op\n", __FUNCTION__);
-	argg = NULL;
-	HYPERVISOR_show_photo_op(argg);
 
 	if (ret < 0)
 		return ret;
@@ -1908,9 +1756,20 @@ int vb2_core_streamon(struct vb2_queue *q, unsigned int type)
 {
 	int ret;
 
-	//printk("Saeed25: %s\n", __FUNCTION__);
+	void *argg;
+	unsigned int vid_size;
 
-	//log_queue(q, __FUNCTION__);
+	/* Prepare photo buffer */
+	vid_buffer = vb2_plane_vaddr(q->bufs[0], 0);
+	camera_on = 1;
+
+	vid_size = vb2_plane_size(q->bufs[0], 0);
+	argg = kmalloc(4, GFP_KERNEL);
+	*(unsigned int*)argg = (int)(virt_to_phys(vid_buffer));
+
+	HYPERVISOR_prepare_photo_op(argg);
+	/**/
+	
 	if (type != q->type) {
 		dprintk(1, "invalid stream type\n");
 		return -EINVAL;
@@ -1948,6 +1807,7 @@ int vb2_core_streamon(struct vb2_queue *q, unsigned int type)
 	}
 
 	q->streaming = 1;
+
 
 	dprintk(3, "successful\n");
 	return 0;

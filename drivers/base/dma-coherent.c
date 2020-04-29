@@ -158,7 +158,6 @@ EXPORT_SYMBOL(dma_mark_declared_memory_occupied);
  * Returns 0 if dma_alloc_coherent should continue with allocating from
  * generic memory areas, or !0 if dma_alloc_coherent should return @ret.
  */
-extern bool saeed_tmp;
 int dma_alloc_from_coherent(struct device *dev, ssize_t size,
 				       dma_addr_t *dma_handle, void **ret)
 {
@@ -168,28 +167,18 @@ int dma_alloc_from_coherent(struct device *dev, ssize_t size,
 	int pageno;
 	int dma_memory_map;
 
-	if(saeed_tmp) {
-		//dump_stack();
-		saeed_tmp = 0;
-	}
-	//printk("Saeed17 [1.1]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
-
 	if (!dev)
 		return 0;
-	//printk("Saeed17 [1.2]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	mem = dev->dma_mem;
 	if (!mem)
 		return 0;
 
-	//printk("Saeed17 [1.3]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	*ret = NULL;
 	spin_lock_irqsave(&mem->spinlock, flags);
 
-	//printk("Saeed17 [1.4]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	if (unlikely(size > (mem->size << PAGE_SHIFT)))
 		goto err;
 
-	//printk("Saeed17 [1.5]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)*dma_handle);
 	pageno = bitmap_find_free_region(mem->bitmap, mem->size, order);
 	if (unlikely(pageno < 0))
 		goto err;
@@ -200,10 +189,6 @@ int dma_alloc_from_coherent(struct device *dev, ssize_t size,
 	*dma_handle = mem->device_base + (pageno << PAGE_SHIFT);
 	*ret = mem->virt_base + (pageno << PAGE_SHIFT);
 	
-	//printk("Saeed17 [2]: %s, dma_addr=%lx\n", __FUNCTION__, (unsigned long)dma_handle);
-	//printk("Saeed17 [3]: %s, mem->device_base=%lx\n", __FUNCTION__, (unsigned long)mem->device_base);
-	//printk("Saeed17 [3]: %s, mem->virt_base=%lx\n", __FUNCTION__, (unsigned long)mem->virt_base);
-
 	dma_memory_map = (mem->flags & DMA_MEMORY_MAP);
 	spin_unlock_irqrestore(&mem->spinlock, flags);
 	if (dma_memory_map)

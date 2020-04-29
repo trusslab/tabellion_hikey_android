@@ -33,24 +33,19 @@ struct vb2_vmalloc_buf {
 
 static void vb2_vmalloc_put(void *buf_priv);
 
-bool saeed_tmp = 0;
-EXPORT_SYMBOL(saeed_tmp);
 static void *vb2_vmalloc_alloc(struct device *dev, unsigned long attrs,
 			       unsigned long size, enum dma_data_direction dma_dir,
 			       gfp_t gfp_flags)
 {
 	struct vb2_vmalloc_buf *buf;
 
-//	printk("Saeed27: %s\n", __FUNCTION__);
-//	printk("Saeed27: %lu\n", size);
-
-	saeed_tmp = 1;
 	buf = kzalloc(sizeof(*buf), GFP_KERNEL | gfp_flags);
 	if (!buf)
 		return ERR_PTR(-ENOMEM);
 
 	buf->size = size;
-	buf->vaddr = vmalloc_user(buf->size);
+//	buf->vaddr = vmalloc_user(buf->size);
+	buf->vaddr = kmalloc(buf->size, GFP_KERNEL);
 	buf->dma_dir = dma_dir;
 	buf->handler.refcount = &buf->refcount;
 	buf->handler.put = vb2_vmalloc_put;
@@ -71,7 +66,7 @@ static void vb2_vmalloc_put(void *buf_priv)
 	struct vb2_vmalloc_buf *buf = buf_priv;
 
 	if (atomic_dec_and_test(&buf->refcount)) {
-		vfree(buf->vaddr);
+		kfree(buf->vaddr);
 		kfree(buf);
 	}
 }
@@ -85,7 +80,6 @@ static void *vb2_vmalloc_get_userptr(struct device *dev, unsigned long vaddr,
 	int n_pages, offset, i;
 	int ret = -ENOMEM;
 
-	printk("Saeed27: %s, %lu\n", __FUNCTION__, size);
 	buf = kzalloc(sizeof(*buf), GFP_KERNEL);
 	if (!buf)
 		return ERR_PTR(-ENOMEM);
@@ -138,7 +132,6 @@ static void vb2_vmalloc_put_userptr(void *buf_priv)
 	struct page **pages;
 	unsigned int n_pages;
 
-//	printk("Saeed27: %s\n", __FUNCTION__);
 	if (!buf->vec->is_pfns) {
 		n_pages = frame_vector_count(buf->vec);
 		pages = frame_vector_pages(buf->vec);
@@ -158,7 +151,6 @@ static void *vb2_vmalloc_vaddr(void *buf_priv)
 {
 	struct vb2_vmalloc_buf *buf = buf_priv;
 
-//	printk("Saeed27: %s\n", __FUNCTION__);
 	if (!buf->vaddr) {
 		pr_err("Address of an unallocated plane requested "
 		       "or cannot map user pointer\n");
@@ -183,7 +175,7 @@ static int vb2_vmalloc_mmap(void *buf_priv, struct vm_area_struct *vma)
 		pr_err("No memory to map\n");
 		return -EINVAL;
 	}
-
+	
 	ret = remap_vmalloc_range(vma, buf->vaddr, 0);
 	if (ret) {
 		pr_err("Remapping vmalloc memory, error: %d\n", ret);

@@ -647,8 +647,6 @@ static int ade_crtc_init(struct drm_device *dev, struct drm_crtc *crtc,
 	return 0;
 }
 int ccc = 0;
-void* argg;
-void* buff;
 extern bool camera_on;
 //extern unsigned int cam_dma_addr;
 
@@ -666,9 +664,6 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	u32 stride = fb->pitches[0];
 	u32 addr = (u32)obj->paddr + y * stride;
 
-	//printk("Saeed20: paddr + y*stride %lx\n", (unsigned long)addr);
-
-	//printk("Saeed1111: %s\n", __FUNCTION__);
 	DRM_DEBUG_DRIVER("rdma%d: (y=%d, height=%d), stride=%d, paddr=0x%x\n",
 			 ch + 1, y, in_h, stride, (u32)obj->paddr);
 	format_name = drm_get_format_name(fb->pixel_format);
@@ -688,14 +683,14 @@ static void ade_rdma_set(void __iomem *base, struct drm_framebuffer *fb,
 	 * TODO: set rotation
 	 */
 	writel((fmt << 16) & 0x1f0000, base + reg_ctrl);
-	//Saeed
+	/* flag to avoid continuous write to ade reg */
 	if(!camera_on && !freeze_on)
 		writel(addr, base + reg_addr);
 
 	my_base = base;
 	my_fb = fb;
 	my_reg_en = reg_en;
-//	}
+
 	writel((in_h << 16) | stride, base + reg_size);
 	writel(stride, base + reg_stride);
 	writel(in_h * stride, base + reg_space);
@@ -721,77 +716,9 @@ EXPORT_SYMBOL(unfreeze_ui);
 
 void freeze_ui(void)
 {
-//	struct drm_gem_cma_object *obj;
-	unsigned long src_addr = 0x56100000; //FIXME
-
-//	printk("Start freezing ui\n");
-//		//p = kmalloc(sizeof (struct drm_framebuffer), GFP_KERNEL);
-//		cma_obj = drm_fb_cma_get_gem_obj(my_fb, 0);
-////		rett = HYPERVISOR_xen_version(0, NULL);
-
-		// Saeed: rdma set function update the reg_addr value later later
-		// I only update the object paddr
-//		writel(addr, base + reg_addr);
-//		reg_addr = RD_CH_ADDR(ch);
-
-//
-		freeze_on = 1;
-		if(!allocated) {
-			sobj = drm_gem_cma_create(gg_dev, 16588800 + 4 + 4); //plus the counter and random number generator
-//			printk("Saeed20: paddr=%lx\n", (unsigned long)sobj->paddr);
-			allocated = 1;
-			sfb_vaddr = (unsigned long)sobj->vaddr;
-			sfb_paddr = (unsigned long)sobj->paddr;
-		}
-		memcpy(phys_to_virt((unsigned long)sobj->paddr), phys_to_virt((unsigned long)src_addr), 16588800/2);
-		memcpy(phys_to_virt((unsigned long)sobj->paddr) + 16588800/2, phys_to_virt((unsigned long)src_addr), 16588800/2);
-
-//		printk("reg_addr before update=%x\n", readl(my_base + 0x1008));		
-//		writel(sobj->paddr, my_base + 0x1008);
-//		writel(ADE_ENABLE, my_base + my_reg_en);
-//		printk("Saeed: reg_en=%u\n", my_reg_en);
-//		printk("reg_addr after update=%x\n", readl(my_base + 0x1008));		
-		//Let's do this in Xen, after the white page
-		//cma_obj->paddr = obj->paddr;
-
-//		rett = HYPERVISOR_freeze_op(NULL);
-////		printk("Saeed19: XEN ret=%d\n", rett);
-//		args->paddr = (unsigned long)(obj->paddr);
-//		rett = HYPERVISOR_freeze_op(args);
-//		printk("Saeed19: XEN ret=%d\n", rett);
-
-
-
-
-//	if(ccc==855) {
-//		printk("Saeed: start freezein kernel [1]\n");
-//		printk("Saeed: start freezein kernel [2]\n");
-		buff = kmalloc(4, GFP_KERNEL);
-//		argg = kmalloc(4, GFP_KERNEL);
-//		//printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff) >> PAGE_SHIFT));
-//		printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff)));
-//		printk("Saeed21: virt=%lx\n", (unsigned long)(buff));
-//		
-//		printk("Saeed: start freezein kernel [3]\n");
-//		//*(int*)argg = (int)(virt_to_phys(buff) >> PAGE_SHIFT);
-//		*(int*)argg = (int)(virt_to_phys(buff));
-		*(unsigned int*)buff = (unsigned int)sobj->paddr;
-//		HYPERVISOR_freeze_op(argg);
-//	}
-		argg = kmalloc(4, GFP_KERNEL);
-//		//printk("Saeed21: phys=%lx\n", (unsigned long)(virt_to_phys(buff) >> PAGE_SHIFT));
-
-		//This doesn't make sense for ioremapped memory
-		//printk("Saeed22: base phys=%lx\n", (unsigned long)(virt_to_phys(base)));
-
-		*(int*)argg = (int)(virt_to_phys(buff));
-		//*(int*)argg = (int)(virt_to_phys(base));
-		//writel(base + reg_addr, 0x55100000);
-//		printk("Saeed23: buff val=%lx\n", (unsigned long)readl(buff));
-		//HYPERVISOR_freeze_op(argg);
-
-		HYPERVISOR_freeze_op(argg);
-//		freeze_on = 0;
+	void *arg;
+	freeze_on = 1;
+	HYPERVISOR_freeze_op(arg);
 }
 EXPORT_SYMBOL(freeze_ui);
 static void ade_rdma_disable(void __iomem *base, u32 ch)
